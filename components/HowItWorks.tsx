@@ -73,32 +73,35 @@ interface HowItWorksProps {
 export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
   return (
     <section id="how-it-works" className="section-padding">
-      <div className="section-container">
+      {/* Centered container */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
           variants={staggerContainer}
         >
+          {/* Centered heading/subheading */}
           <motion.div variants={fadeInUp} className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 text-center">
               How <span className="gradient-text">It Works</span>
             </h2>
-            <p className="text-lg text-frost-300 max-w-2xl mx-auto">
+            <p className="text-lg text-frost-300 max-w-2xl mx-auto text-center">
               Six simple steps from overpaying to saving money every month
             </p>
           </motion.div>
 
           <div className="relative">
-            {/* Connection line */}
-            <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-cyan/30 to-transparent" />
+            {/* Centered connection line */}
+            <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 w-full max-w-5xl h-px bg-gradient-to-r from-transparent via-neon-cyan/30 to-transparent" />
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {steps.map((step, index) => (
+            {/* Centered grid with place-items-center */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 place-items-center">
+              {steps.map((step) => (
                 <motion.div
                   key={step.number}
                   variants={fadeInUp}
-                  className="relative"
+                  className="relative w-full max-w-md"
                 >
                   <div className="glass-panel-hover p-6 h-full">
                     {/* HUD corners */}
