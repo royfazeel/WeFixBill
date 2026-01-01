@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { fadeInUp, staggerContainer } from '@/lib/motion'
+import FloatingButton from './FloatingButton'
 
 const steps = [
   {
@@ -83,17 +84,17 @@ export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
         >
           {/* Centered heading/subheading */}
           <motion.div variants={fadeInUp} className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 text-center">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-4 text-center">
               How <span className="gradient-text">It Works</span>
             </h2>
-            <p className="text-lg text-frost-300 max-w-2xl mx-auto text-center">
+            <p className="text-lg text-slate-600 dark:text-frost-300 max-w-2xl mx-auto text-center">
               Six simple steps from overpaying to saving money every month
             </p>
           </motion.div>
 
           <div className="relative">
             {/* Centered connection line */}
-            <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 w-full max-w-5xl h-px bg-gradient-to-r from-transparent via-neon-cyan/30 to-transparent" />
+            <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 w-full max-w-5xl h-px bg-gradient-to-r from-transparent via-sky-400/30 dark:via-neon-cyan/30 to-transparent" />
 
             {/* Centered grid with place-items-center */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 place-items-center">
@@ -111,20 +112,20 @@ export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
                     <div className="hud-corner-br" />
 
                     {/* Step number */}
-                    <div className="absolute -top-3 left-6 px-3 py-1 bg-midnight-900 border border-neon-cyan/50 rounded-full">
-                      <span className="text-neon-cyan font-mono text-sm">{step.number}</span>
+                    <div className="absolute -top-3 left-6 px-3 py-1 bg-white dark:bg-midnight-900 border border-sky-300 dark:border-neon-cyan/50 rounded-full">
+                      <span className="text-sky-600 dark:text-neon-cyan font-mono text-sm">{step.number}</span>
                     </div>
 
                     {/* Icon */}
-                    <div className="w-14 h-14 rounded-xl bg-neon-cyan/10 border border-neon-cyan/30 flex items-center justify-center text-neon-cyan mb-4 mt-4">
+                    <div className="w-14 h-14 rounded-xl bg-sky-100 dark:bg-neon-cyan/10 border border-sky-200 dark:border-neon-cyan/30 flex items-center justify-center text-sky-600 dark:text-neon-cyan mb-4 mt-4">
                       {step.icon}
                     </div>
 
                     {/* Content */}
-                    <h3 className="text-lg font-semibold text-white mb-2">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                       {step.title}
                     </h3>
-                    <p className="text-frost-400 text-sm leading-relaxed">
+                    <p className="text-slate-500 dark:text-frost-400 text-sm leading-relaxed">
                       {step.description}
                     </p>
                   </div>
@@ -134,9 +135,9 @@ export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
           </div>
 
           <motion.div variants={fadeInUp} className="text-center mt-12">
-            <button onClick={onOpenModal} className="btn-primary text-lg px-10 py-4">
+            <FloatingButton onClick={onOpenModal} variant="primary" size="lg">
               Get Started Now
-            </button>
+            </FloatingButton>
           </motion.div>
         </motion.div>
       </div>
