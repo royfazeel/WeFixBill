@@ -11,19 +11,15 @@ export const metadata: Metadata = {
   authors: [{ name: 'Wefixbill' }],
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/icon.png', type: 'image/png', sizes: '512x512' },
     ],
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
     ],
-    other: [
-      { rel: 'icon', url: '/favicon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { rel: 'icon', url: '/favicon-512x512.png', sizes: '512x512', type: 'image/png' },
-    ],
+    shortcut: '/favicon.ico',
   },
-  manifest: '/manifest.json',
+  manifest: '/site.webmanifest',
   openGraph: {
     title: 'Wefixbill | Expert Bill Negotiation Services',
     description: 'Stop overpaying for your bills. Our expert negotiators reduce your internet, cable, wireless, and utility bills.',
@@ -45,8 +41,27 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#030712',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#030712' },
+  ],
 }
+
+// Script to prevent FOUC (Flash of Unstyled Content) for theme
+const themeScript = `
+(function() {
+  try {
+    var theme = localStorage.getItem('wefixbill-theme');
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    }
+  } catch (e) {}
+})();
+`
 
 export default function RootLayout({
   children,
@@ -54,20 +69,21 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-sans overflow-x-hidden">
+      <body className="font-sans overflow-x-hidden bg-white dark:bg-midnight-950 text-slate-900 dark:text-frost-100 antialiased transition-colors duration-300">
         {/* Grid pattern background */}
-        <div className="fixed inset-0 grid-pattern pointer-events-none z-0" aria-hidden="true" />
+        <div className="fixed inset-0 grid-pattern pointer-events-none z-0 opacity-30 dark:opacity-100" aria-hidden="true" />
         
-        {/* Aurora glow effects */}
+        {/* Aurora glow effects - visible in both themes but more prominent in dark */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-neon-cyan/10 rounded-full blur-[150px] animate-aurora" />
-          <div className="absolute bottom-0 right-1/4 w-[800px] h-[800px] bg-neon-purple/10 rounded-full blur-[150px] animate-aurora" style={{ animationDelay: '-4s' }} />
+          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-sky-400/5 dark:bg-neon-cyan/10 rounded-full blur-[150px] animate-aurora" />
+          <div className="absolute bottom-0 right-1/4 w-[800px] h-[800px] bg-purple-400/5 dark:bg-neon-purple/10 rounded-full blur-[150px] animate-aurora" style={{ animationDelay: '-4s' }} />
         </div>
         
         {/* Main content */}

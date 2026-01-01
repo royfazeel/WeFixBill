@@ -1,127 +1,135 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { cn, isValidEmail, isValidZip, generateId, formatCurrency } from '@/lib/utils'
-import { BILL_CATEGORIES, PROVIDERS, US_STATES, PRICING_CONFIG } from '@/lib/pricing'
-import { modalBackdrop, modalContent } from '@/lib/motion'
+import FloatingButton from './FloatingButton'
+import { cn, isValidEmail, isValidPhone, isValidZip } from '@/lib/utils'
+import { BILL_CATEGORIES, US_STATES, PROVIDERS_BY_CATEGORY } from '@/lib/pricing'
 
 interface IntakeModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-type Step = 1 | 2 | 3 | 4 | 5 | 6 | 'success'
+type Step = 1 | 2 | 3 | 4
 
 interface FormData {
-  // Step 1: Bill Categories
-  categories: string[]
-  // Step 2: Provider Details
-  bills: Array<{
-    id: string
-    category: string
-    provider: string
-    monthlyAmount: number
-  }>
-  // Step 3: Location
-  zipCode: string
-  state: string
-  // Step 4: Bill Upload (simulated)
-  uploadedFiles: string[]
-  // Step 5: Authorization
   fullName: string
   email: string
   phone: string
-  authorizationConsent: boolean
-  termsConsent: boolean
-  // Step 6: Pricing Selection
-  pricingPlan: 'success-40' | 'success-50' | 'lifetime'
+  state: string
+  zipCode: string
+  billCategory: string
+  provider: string
+  monthlyAmount: string
+  signature: string
+  consent: boolean
+}
+
+interface FormErrors {
+  [key: string]: string
 }
 
 const initialFormData: FormData = {
-  categories: [],
-  bills: [],
-  zipCode: '',
-  state: '',
-  uploadedFiles: [],
   fullName: '',
   email: '',
   phone: '',
-  authorizationConsent: false,
-  termsConsent: false,
-  pricingPlan: 'success-40',
+  state: '',
+  zipCode: '',
+  billCategory: '',
+  provider: '',
+  monthlyAmount: '',
+  signature: '',
+  consent: false,
 }
 
 export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
   const [step, setStep] = useState<Step>(1)
   const [formData, setFormData] = useState<FormData>(initialFormData)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [file, setFile] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitSuccess, setSubmitSuccess] = useState<{ message: string; referenceId: string } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Reset on close
-  useEffect(() => {
-    if (!isOpen) {
-      setTimeout(() => {
-        setStep(1)
-        setFormData(initialFormData)
-        setErrors({})
-      }, 300)
+  const resetForm = useCallback(() => {
+    setStep(1)
+    setFormData(initialFormData)
+    setErrors({})
+    setFile(null)
+    setIsSubmitting(false)
+    setSubmitError(null)
+    setSubmitSuccess(null)
+  }, [])
+
+  const handleClose = useCallback(() => {
+    onClose()
+    setTimeout(resetForm, 300)
+  }, [onClose, resetForm])
+
+  const updateField = (field: keyof FormData, value: string | boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
     }
-  }, [isOpen])
+  }
 
-  // Prevent body scroll
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen])
+  const validateStep1 = (): boolean => {
+    const newErrors: FormErrors = {}
 
-  // Close on escape
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
-  }, [onClose])
-
-  const validateStep = (currentStep: Step): boolean => {
-    const newErrors: Record<string, string> = {}
-
-    if (currentStep === 1) {
-      if (formData.categories.length === 0) {
-        newErrors.categories = 'Please select at least one bill category'
-      }
+    if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
+      newErrors.fullName = 'Full name is required'
     }
 
-    if (currentStep === 2) {
-      if (formData.bills.length === 0) {
-        newErrors.bills = 'Please add at least one bill'
-      } else {
-        formData.bills.forEach((bill, i) => {
-          if (!bill.provider) newErrors[`bill-${i}-provider`] = 'Required'
-          if (bill.monthlyAmount < 1) newErrors[`bill-${i}-amount`] = 'Required'
-        })
-      }
+    if (!isValidEmail(formData.email)) {
+      newErrors.email = 'Valid email is required'
     }
 
-    if (currentStep === 3) {
-      if (!isValidZip(formData.zipCode)) {
-        newErrors.zipCode = 'Please enter a valid ZIP code'
-      }
-      if (!formData.state) {
-        newErrors.state = 'Please select your state'
-      }
+    if (!isValidPhone(formData.phone)) {
+      newErrors.phone = 'Valid phone number is required'
     }
 
-    if (currentStep === 5) {
-      if (!formData.fullName.trim()) newErrors.fullName = 'Required'
-      if (!isValidEmail(formData.email)) newErrors.email = 'Valid email required'
-      if (!formData.authorizationConsent) newErrors.authorizationConsent = 'Required'
-      if (!formData.termsConsent) newErrors.termsConsent = 'Required'
+    if (!formData.state) {
+      newErrors.state = 'State is required'
+    }
+
+    if (!isValidZip(formData.zipCode)) {
+      newErrors.zipCode = 'Valid ZIP code is required'
+    }
+
+    if (!formData.billCategory) {
+      newErrors.billCategory = 'Select a bill category'
+    }
+
+    if (!formData.provider.trim()) {
+      newErrors.provider = 'Provider name is required'
+    }
+
+    const amount = parseFloat(formData.monthlyAmount)
+    if (isNaN(amount) || amount < 20 || amount > 5000) {
+      newErrors.monthlyAmount = 'Amount must be between $20 and $5000'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const validateStep3 = (): boolean => {
+    const newErrors: FormErrors = {}
+
+    if (!formData.consent) {
+      newErrors.consent = 'You must agree to proceed'
+    }
+
+    if (!formData.signature.trim()) {
+      newErrors.signature = 'Please type your full name as signature'
+    } else if (formData.signature.toLowerCase().trim() !== formData.fullName.toLowerCase().trim()) {
+      newErrors.signature = 'Signature must match your full name'
     }
 
     setErrors(newErrors)
@@ -129,505 +137,723 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
   }
 
   const handleNext = () => {
-    if (!validateStep(step as Step)) return
-
-    if (step === 1) {
-      // Initialize bills for selected categories
-      const newBills = formData.categories.map(cat => ({
-        id: generateId(),
-        category: cat,
-        provider: '',
-        monthlyAmount: 0,
-      }))
-      setFormData(prev => ({ ...prev, bills: newBills }))
-    }
-
-    if (step === 6) {
+    if (step === 1 && validateStep1()) {
+      setStep(2)
+    } else if (step === 2) {
+      setStep(3)
+    } else if (step === 3 && validateStep3()) {
       handleSubmit()
-    } else {
-      setStep(prev => (prev as number) + 1 as Step)
     }
   }
 
   const handleBack = () => {
-    setStep(prev => (prev as number) - 1 as Step)
+    if (step > 1) {
+      setStep((prev) => (prev - 1) as Step)
+    }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile) {
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
+      if (!allowedTypes.includes(selectedFile.type)) {
+        setErrors((prev) => ({ ...prev, file: 'Only PDF, JPG, or PNG files allowed' }))
+        return
+      }
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        setErrors((prev) => ({ ...prev, file: 'File must be under 10MB' }))
+        return
+      }
+      setFile(selectedFile)
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next.file
+        return next
+      })
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const droppedFile = e.dataTransfer.files?.[0]
+    if (droppedFile) {
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
+      if (!allowedTypes.includes(droppedFile.type)) {
+        setErrors((prev) => ({ ...prev, file: 'Only PDF, JPG, or PNG files allowed' }))
+        return
+      }
+      if (droppedFile.size > 10 * 1024 * 1024) {
+        setErrors((prev) => ({ ...prev, file: 'File must be under 10MB' }))
+        return
+      }
+      setFile(droppedFile)
+    }
   }
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    setIsSubmitting(false)
-    setStep('success')
+    setSubmitError(null)
+
+    try {
+      const submitData = new FormData()
+      submitData.append('fullName', formData.fullName)
+      submitData.append('email', formData.email)
+      submitData.append('phone', formData.phone)
+      submitData.append('state', formData.state)
+      submitData.append('zipCode', formData.zipCode)
+      submitData.append('billCategory', formData.billCategory)
+      submitData.append('provider', formData.provider)
+      submitData.append('monthlyAmount', formData.monthlyAmount)
+      submitData.append('signature', formData.signature)
+      submitData.append('consent', String(formData.consent))
+      submitData.append('website', '') // Honeypot
+
+      if (file) {
+        submitData.append('bill', file)
+      }
+
+      const response = await fetch('/api/lead', {
+        method: 'POST',
+        body: submitData,
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        if (result.errors) {
+          setErrors(result.errors)
+          setStep(1)
+        } else {
+          setSubmitError(result.error || 'Submission failed. Please try again.')
+        }
+        return
+      }
+
+      setSubmitSuccess({
+        message: result.message,
+        referenceId: result.referenceId,
+      })
+      setStep(4)
+    } catch {
+      setSubmitError('Network error. Please check your connection and try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const toggleCategory = (categoryId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      categories: prev.categories.includes(categoryId)
-        ? prev.categories.filter(c => c !== categoryId)
-        : [...prev.categories, categoryId]
-    }))
-    setErrors(prev => ({ ...prev, categories: '' }))
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B'
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
   }
 
-  const updateBill = (id: string, field: string, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      bills: prev.bills.map(bill => 
-        bill.id === id ? { ...bill, [field]: value } : bill
-      )
-    }))
-  }
+  const providers = formData.billCategory
+    ? PROVIDERS_BY_CATEGORY[formData.billCategory as keyof typeof PROVIDERS_BY_CATEGORY] || []
+    : []
 
-  const simulateFileUpload = () => {
-    const fakeFile = `bill_${Date.now()}.pdf`
-    setFormData(prev => ({
-      ...prev,
-      uploadedFiles: [...prev.uploadedFiles, fakeFile]
-    }))
-  }
-
-  const progressPercent = step === 'success' ? 100 : ((step as number) / 6) * 100
+  if (!isOpen) return null
 
   return (
     <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            variants={modalBackdrop}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            onClick={onClose}
-            className="fixed inset-0 bg-midnight-950/90 backdrop-blur-sm z-50"
-          />
-
-          <motion.div
-            variants={modalContent}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:max-h-[90vh] bg-midnight-900 border border-white/10 rounded-2xl overflow-hidden z-50 flex flex-col"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        onClick={handleClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ duration: 0.2 }}
+          className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-midnight-900 rounded-2xl shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close button */}
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors z-10"
           >
-            {/* Header */}
-            <div className="p-6 border-b border-white/10">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-white">
-                  {step === 'success' ? 'You\'re All Set!' : 'Start Saving'}
-                </h2>
-                <button
-                  onClick={onClose}
-                  className="p-2 text-frost-400 hover:text-white transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              
-              {/* Progress bar */}
-              {step !== 'success' && (
-                <div className="h-1 bg-midnight-700 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-neon-cyan to-neon-purple"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercent}%` }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </div>
-              )}
-            </div>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <AnimatePresence mode="wait">
-                {/* Step 1: Categories */}
-                {step === 1 && (
-                  <motion.div
-                    key="step1"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                  >
-                    <h3 className="text-lg font-semibold text-white mb-2">Which bills do you want us to negotiate?</h3>
-                    <p className="text-frost-400 mb-6">Select all that apply</p>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      {BILL_CATEGORIES.map(cat => (
-                        <button
-                          key={cat.id}
-                          onClick={() => toggleCategory(cat.id)}
+          {/* Progress bar */}
+          {step < 4 && (
+            <div className="px-8 pt-6">
+              <div className="flex items-center justify-between mb-2">
+                {[1, 2, 3].map((s) => (
+                  <div key={s} className="flex items-center">
+                    <div
+                      className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all',
+                        step >= s
+                          ? 'bg-sky-500 text-white dark:bg-neon-cyan dark:text-midnight-900'
+                          : 'bg-gray-200 text-gray-500 dark:bg-midnight-700 dark:text-frost-400'
+                      )}
+                    >
+                      {step > s ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        s
+                      )}
+                    </div>
+                    {s < 3 && (
+                      <div
+                        className={cn(
+                          'w-20 sm:w-32 h-1 mx-2 rounded transition-all',
+                          step > s ? 'bg-sky-500 dark:bg-neon-cyan' : 'bg-gray-200 dark:bg-midnight-700'
+                        )}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 dark:text-frost-400">
+                <span>Your Info</span>
+                <span>Upload Bill</span>
+                <span>Confirm</span>
+              </div>
+            </div>
+          )}
+
+          <div className="p-8">
+            {/* Step 1: User Info & Bill Details */}
+            {step === 1 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  Let's Get Started
+                </h2>
+                <p className="text-gray-600 dark:text-frost-300 mb-6">
+                  Tell us about yourself and the bill you'd like us to negotiate.
+                </p>
+
+                <div className="space-y-4">
+                  {/* Full Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-frost-300 mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) => updateField('fullName', e.target.value)}
+                      className={cn(
+                        'w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-white transition-all',
+                        errors.fullName
+                          ? 'border-red-500 focus:ring-red-500'
+                          : 'border-gray-200 dark:border-white/10 focus:border-sky-500 focus:ring-sky-500'
+                      )}
+                      placeholder="John Smith"
+                    />
+                    {errors.fullName && <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>}
+                  </div>
+
+                  {/* Email & Phone */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-frost-300 mb-1">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => updateField('email', e.target.value)}
+                        className={cn(
+                          'w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-white transition-all',
+                          errors.email
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-gray-200 dark:border-white/10 focus:border-sky-500 focus:ring-sky-500'
+                        )}
+                        placeholder="john@example.com"
+                      />
+                      {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-frost-300 mb-1">
+                        Phone *
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => updateField('phone', e.target.value)}
+                        className={cn(
+                          'w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-white transition-all',
+                          errors.phone
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-gray-200 dark:border-white/10 focus:border-sky-500 focus:ring-sky-500'
+                        )}
+                        placeholder="(555) 123-4567"
+                      />
+                      {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
+                    </div>
+                  </div>
+
+                  {/* State & ZIP */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-frost-300 mb-1">
+                        State *
+                      </label>
+                      <select
+                        value={formData.state}
+                        onChange={(e) => updateField('state', e.target.value)}
+                        className={cn(
+                          'w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-white transition-all',
+                          errors.state
+                            ? 'border-red-500'
+                            : 'border-gray-200 dark:border-white/10 focus:border-sky-500'
+                        )}
+                      >
+                        <option value="">Select State</option>
+                        {US_STATES.map((state) => (
+                          <option key={state.code} value={state.code}>
+                            {state.name}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.state && <p className="mt-1 text-sm text-red-500">{errors.state}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-frost-300 mb-1">
+                        ZIP Code *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.zipCode}
+                        onChange={(e) => updateField('zipCode', e.target.value)}
+                        className={cn(
+                          'w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-white transition-all',
+                          errors.zipCode
+                            ? 'border-red-500'
+                            : 'border-gray-200 dark:border-white/10 focus:border-sky-500'
+                        )}
+                        placeholder="12345"
+                        maxLength={10}
+                      />
+                      {errors.zipCode && <p className="mt-1 text-sm text-red-500">{errors.zipCode}</p>}
+                    </div>
+                  </div>
+
+                  {/* Bill Category */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-frost-300 mb-1">
+                      Bill Category *
+                    </label>
+                    <select
+                      value={formData.billCategory}
+                      onChange={(e) => {
+                        updateField('billCategory', e.target.value)
+                        updateField('provider', '')
+                      }}
+                      className={cn(
+                        'w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-white transition-all',
+                        errors.billCategory
+                          ? 'border-red-500'
+                          : 'border-gray-200 dark:border-white/10 focus:border-sky-500'
+                      )}
+                    >
+                      <option value="">Select Category</option>
+                      {BILL_CATEGORIES.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.icon} {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.billCategory && <p className="mt-1 text-sm text-red-500">{errors.billCategory}</p>}
+                  </div>
+
+                  {/* Provider & Amount */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-frost-300 mb-1">
+                        Provider *
+                      </label>
+                      {providers.length > 0 ? (
+                        <select
+                          value={formData.provider}
+                          onChange={(e) => updateField('provider', e.target.value)}
                           className={cn(
-                            'p-4 rounded-xl border text-left transition-all',
-                            formData.categories.includes(cat.id)
-                              ? 'bg-neon-cyan/10 border-neon-cyan'
-                              : 'bg-white/5 border-white/10 hover:border-white/20'
+                            'w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-white transition-all',
+                            errors.provider
+                              ? 'border-red-500'
+                              : 'border-gray-200 dark:border-white/10 focus:border-sky-500'
                           )}
                         >
-                          <span className="text-2xl mr-2">{cat.icon}</span>
-                          <span className="text-white font-medium">{cat.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                    {errors.categories && (
-                      <p className="text-red-400 text-sm mt-2">{errors.categories}</p>
-                    )}
-                  </motion.div>
-                )}
-
-                {/* Step 2: Provider Details */}
-                {step === 2 && (
-                  <motion.div
-                    key="step2"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                  >
-                    <h3 className="text-lg font-semibold text-white mb-2">Tell us about your bills</h3>
-                    <p className="text-frost-400 mb-6">Provider and current monthly amount</p>
-                    
-                    <div className="space-y-4">
-                      {formData.bills.map((bill, i) => {
-                        const category = BILL_CATEGORIES.find(c => c.id === bill.category)
-                        return (
-                          <div key={bill.id} className="bg-midnight-800/50 rounded-xl p-4">
-                            <div className="flex items-center gap-2 mb-4">
-                              <span className="text-xl">{category?.icon}</span>
-                              <span className="text-white font-medium">{category?.name}</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="text-frost-400 text-sm block mb-1">Provider</label>
-                                <select
-                                  value={bill.provider}
-                                  onChange={(e) => updateBill(bill.id, 'provider', e.target.value)}
-                                  className="input-field"
-                                >
-                                  <option value="">Select provider</option>
-                                  {PROVIDERS[bill.category]?.map(p => (
-                                    <option key={p} value={p}>{p}</option>
-                                  ))}
-                                </select>
-                              </div>
-                              <div>
-                                <label className="text-frost-400 text-sm block mb-1">Monthly Amount</label>
-                                <input
-                                  type="number"
-                                  value={bill.monthlyAmount || ''}
-                                  onChange={(e) => updateBill(bill.id, 'monthlyAmount', Number(e.target.value))}
-                                  placeholder="$0"
-                                  className="input-field"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Step 3: Location */}
-                {step === 3 && (
-                  <motion.div
-                    key="step3"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                  >
-                    <h3 className="text-lg font-semibold text-white mb-2">Where are you located?</h3>
-                    <p className="text-frost-400 mb-6">This helps us find the best offers in your area</p>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-frost-400 text-sm block mb-1">ZIP Code</label>
-                        <input
-                          type="text"
-                          value={formData.zipCode}
-                          onChange={(e) => setFormData(prev => ({ ...prev, zipCode: e.target.value }))}
-                          placeholder="12345"
-                          maxLength={10}
-                          className="input-field"
-                        />
-                        {errors.zipCode && <p className="text-red-400 text-sm mt-1">{errors.zipCode}</p>}
-                      </div>
-                      <div>
-                        <label className="text-frost-400 text-sm block mb-1">State</label>
-                        <select
-                          value={formData.state}
-                          onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                          className="input-field"
-                        >
-                          <option value="">Select state</option>
-                          {US_STATES.map(state => (
-                            <option key={state} value={state}>{state}</option>
+                          <option value="">Select Provider</option>
+                          {providers.map((p) => (
+                            <option key={p} value={p}>
+                              {p}
+                            </option>
                           ))}
+                          <option value="Other">Other</option>
                         </select>
-                        {errors.state && <p className="text-red-400 text-sm mt-1">{errors.state}</p>}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Step 4: Bill Upload */}
-                {step === 4 && (
-                  <motion.div
-                    key="step4"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                  >
-                    <h3 className="text-lg font-semibold text-white mb-2">Upload your bills (optional)</h3>
-                    <p className="text-frost-400 mb-6">This helps us negotiate more effectively</p>
-                    
-                    <div
-                      onClick={simulateFileUpload}
-                      className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center cursor-pointer hover:border-neon-cyan/50 transition-colors"
-                    >
-                      <svg className="w-12 h-12 mx-auto text-frost-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                      <p className="text-frost-300 mb-1">Click to upload or drag and drop</p>
-                      <p className="text-frost-500 text-sm">PDF, PNG, JPG up to 10MB</p>
-                    </div>
-
-                    {formData.uploadedFiles.length > 0 && (
-                      <div className="mt-4 space-y-2">
-                        {formData.uploadedFiles.map((file, i) => (
-                          <div key={i} className="flex items-center gap-3 bg-midnight-800/50 rounded-lg p-3">
-                            <svg className="w-5 h-5 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span className="text-frost-300 text-sm">{file}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    <p className="text-frost-500 text-sm mt-4">
-                      You can skip this step and provide bills later
-                    </p>
-                  </motion.div>
-                )}
-
-                {/* Step 5: Authorization */}
-                {step === 5 && (
-                  <motion.div
-                    key="step5"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                  >
-                    <h3 className="text-lg font-semibold text-white mb-2">Authorization & Contact</h3>
-                    <p className="text-frost-400 mb-6">Sign our Letter of Authorization to let us negotiate</p>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-frost-400 text-sm block mb-1">Full Legal Name</label>
+                      ) : (
                         <input
                           type="text"
-                          value={formData.fullName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                          placeholder="John Smith"
-                          className="input-field"
+                          value={formData.provider}
+                          onChange={(e) => updateField('provider', e.target.value)}
+                          className={cn(
+                            'w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-white transition-all',
+                            errors.provider
+                              ? 'border-red-500'
+                              : 'border-gray-200 dark:border-white/10 focus:border-sky-500'
+                          )}
+                          placeholder="Enter provider name"
                         />
-                        {errors.fullName && <p className="text-red-400 text-sm mt-1">{errors.fullName}</p>}
-                      </div>
-                      <div>
-                        <label className="text-frost-400 text-sm block mb-1">Email</label>
+                      )}
+                      {errors.provider && <p className="mt-1 text-sm text-red-500">{errors.provider}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-frost-300 mb-1">
+                        Monthly Amount *
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                         <input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                          placeholder="john@example.com"
-                          className="input-field"
-                        />
-                        {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
-                      </div>
-                      <div>
-                        <label className="text-frost-400 text-sm block mb-1">Phone (optional)</label>
-                        <input
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                          placeholder="(555) 123-4567"
-                          className="input-field"
+                          type="number"
+                          value={formData.monthlyAmount}
+                          onChange={(e) => updateField('monthlyAmount', e.target.value)}
+                          className={cn(
+                            'w-full pl-8 pr-4 py-3 rounded-xl border bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-white transition-all',
+                            errors.monthlyAmount
+                              ? 'border-red-500'
+                              : 'border-gray-200 dark:border-white/10 focus:border-sky-500'
+                          )}
+                          placeholder="150"
+                          min="20"
+                          max="5000"
                         />
                       </div>
-
-                      <div className="pt-4 border-t border-white/10 space-y-3">
-                        <label className="flex items-start gap-3 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.authorizationConsent}
-                            onChange={(e) => setFormData(prev => ({ ...prev, authorizationConsent: e.target.checked }))}
-                            className="mt-1 w-4 h-4 rounded border-white/20 bg-midnight-800 text-neon-cyan focus:ring-neon-cyan"
-                          />
-                          <span className="text-frost-300 text-sm">
-                            I authorize Wefixbill to contact my service providers and negotiate on my behalf. I confirm I am authorized to make changes to these accounts.
-                          </span>
-                        </label>
-                        {errors.authorizationConsent && <p className="text-red-400 text-sm">{errors.authorizationConsent}</p>}
-                        
-                        <label className="flex items-start gap-3 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.termsConsent}
-                            onChange={(e) => setFormData(prev => ({ ...prev, termsConsent: e.target.checked }))}
-                            className="mt-1 w-4 h-4 rounded border-white/20 bg-midnight-800 text-neon-cyan focus:ring-neon-cyan"
-                          />
-                          <span className="text-frost-300 text-sm">
-                            I agree to the <a href="/terms-of-service" className="text-neon-cyan hover:underline">Terms of Service</a> and <a href="/privacy-policy" className="text-neon-cyan hover:underline">Privacy Policy</a>
-                          </span>
-                        </label>
-                        {errors.termsConsent && <p className="text-red-400 text-sm">{errors.termsConsent}</p>}
-                      </div>
+                      {errors.monthlyAmount && <p className="mt-1 text-sm text-red-500">{errors.monthlyAmount}</p>}
                     </div>
-                  </motion.div>
-                )}
+                  </div>
+                </div>
 
-                {/* Step 6: Pricing Selection */}
-                {step === 6 && (
-                  <motion.div
-                    key="step6"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                  >
-                    <h3 className="text-lg font-semibold text-white mb-2">Choose your plan</h3>
-                    <p className="text-frost-400 mb-6">Select how you'd like to pay</p>
-                    
-                    <div className="space-y-4">
-                      <button
-                        onClick={() => setFormData(prev => ({ ...prev, pricingPlan: 'success-40' }))}
-                        className={cn(
-                          'w-full p-5 rounded-xl border text-left transition-all',
-                          formData.pricingPlan === 'success-40'
-                            ? 'bg-neon-cyan/10 border-neon-cyan'
-                            : 'bg-white/5 border-white/10 hover:border-white/20'
-                        )}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-white font-semibold">Success Fee (40%)</span>
-                          <span className="text-neon-cyan font-bold">No Upfront Cost</span>
-                        </div>
-                        <p className="text-frost-400 text-sm">Pay 40% of savings over 24 months. No savings = no fee.</p>
-                      </button>
-
-                      <button
-                        onClick={() => setFormData(prev => ({ ...prev, pricingPlan: 'success-50' }))}
-                        className={cn(
-                          'w-full p-5 rounded-xl border text-left transition-all',
-                          formData.pricingPlan === 'success-50'
-                            ? 'bg-neon-purple/10 border-neon-purple'
-                            : 'bg-white/5 border-white/10 hover:border-white/20'
-                        )}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-white font-semibold">Flexible Payment (50%)</span>
-                          <span className="text-neon-purple font-bold">Payment Options</span>
-                        </div>
-                        <p className="text-frost-400 text-sm">Pay 50% of 12-month savings. Pay upfront (10% off) or monthly.</p>
-                      </button>
-
-                      <button
-                        onClick={() => setFormData(prev => ({ ...prev, pricingPlan: 'lifetime' }))}
-                        className={cn(
-                          'w-full p-5 rounded-xl border text-left transition-all',
-                          formData.pricingPlan === 'lifetime'
-                            ? 'bg-neon-pink/10 border-neon-pink'
-                            : 'bg-white/5 border-white/10 hover:border-white/20'
-                        )}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-white font-semibold">Lifetime Plan</span>
-                          <span className="text-neon-pink font-bold">{formatCurrency(PRICING_CONFIG.lifetimePlan.price)}</span>
-                        </div>
-                        <p className="text-frost-400 text-sm">One-time fee. Lifetime monitoring + up to 2 renegotiations/year. Savings promise included.</p>
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Success */}
-                {step === 'success' && (
-                  <motion.div
-                    key="success"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-8"
-                  >
-                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-neon-green/20 flex items-center justify-center">
-                      <svg className="w-10 h-10 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">Submission Received!</h3>
-                    <p className="text-frost-300 mb-8 max-w-sm mx-auto">
-                      We'll review your bills and start negotiating within 24-48 hours. Check your email for updates.
-                    </p>
-                    
-                    <div className="bg-midnight-800/50 rounded-xl p-6 text-left max-w-sm mx-auto">
-                      <h4 className="text-white font-semibold mb-4">What happens next:</h4>
-                      <ol className="space-y-3">
-                        <li className="flex items-start gap-3">
-                          <span className="w-6 h-6 rounded-full bg-neon-cyan/20 text-neon-cyan text-sm flex items-center justify-center flex-shrink-0">1</span>
-                          <span className="text-frost-300 text-sm">We review your bills and identify savings opportunities</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="w-6 h-6 rounded-full bg-neon-cyan/20 text-neon-cyan text-sm flex items-center justify-center flex-shrink-0">2</span>
-                          <span className="text-frost-300 text-sm">Our experts contact your providers to negotiate</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="w-6 h-6 rounded-full bg-neon-cyan/20 text-neon-cyan text-sm flex items-center justify-center flex-shrink-0">3</span>
-                          <span className="text-frost-300 text-sm">You approve any changes before we finalize</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="w-6 h-6 rounded-full bg-neon-green/20 text-neon-green text-sm flex items-center justify-center flex-shrink-0">4</span>
-                          <span className="text-frost-300 text-sm">Start saving money!</span>
-                        </li>
-                      </ol>
-                    </div>
-
-                    <button onClick={onClose} className="btn-primary mt-8">
-                      Done
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Footer */}
-            {step !== 'success' && (
-              <div className="p-6 border-t border-white/10 flex justify-between">
-                {step > 1 ? (
-                  <button onClick={handleBack} className="btn-secondary">
-                    Back
-                  </button>
-                ) : (
-                  <div />
-                )}
-                <button 
-                  onClick={handleNext} 
-                  disabled={isSubmitting}
-                  className="btn-primary"
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Submitting...
-                    </span>
-                  ) : step === 6 ? 'Submit' : 'Continue'}
-                </button>
-              </div>
+                <div className="mt-8">
+                  <FloatingButton onClick={handleNext} fullWidth size="lg">
+                    Continue to Upload
+                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </FloatingButton>
+                </div>
+              </motion.div>
             )}
-          </motion.div>
-        </>
-      )}
+
+            {/* Step 2: Bill Upload */}
+            {step === 2 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  Upload Your Bill
+                </h2>
+                <p className="text-gray-600 dark:text-frost-300 mb-6">
+                  Upload a copy of your bill so we can review the details. This helps us negotiate the best rate.
+                </p>
+
+                {/* Drop zone */}
+                <div
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={cn(
+                    'border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all',
+                    file
+                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                      : 'border-gray-300 dark:border-white/20 hover:border-sky-500 dark:hover:border-neon-cyan bg-gray-50 dark:bg-midnight-800'
+                  )}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+
+                  {file ? (
+                    <div className="space-y-3">
+                      <div className="w-16 h-16 mx-auto rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-white">{file.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-frost-400">{formatFileSize(file.size)}</p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setFile(null)
+                        }}
+                        className="text-sm text-red-500 hover:text-red-600 underline"
+                      >
+                        Remove file
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="w-16 h-16 mx-auto rounded-xl bg-gray-100 dark:bg-midnight-700 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-white">
+                          Drop your bill here or click to browse
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-frost-400">
+                          PDF, JPG, or PNG up to 10MB
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {errors.file && <p className="mt-2 text-sm text-red-500">{errors.file}</p>}
+
+                <p className="mt-4 text-sm text-gray-500 dark:text-frost-400 text-center">
+                  📎 Bill upload is optional but recommended for best results
+                </p>
+
+                <div className="mt-8 flex gap-4">
+                  <FloatingButton onClick={handleBack} variant="secondary" fullWidth size="lg">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back
+                  </FloatingButton>
+                  <FloatingButton onClick={handleNext} fullWidth size="lg">
+                    Review & Confirm
+                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </FloatingButton>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 3: Review & Consent */}
+            {step === 3 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  Review & Authorize
+                </h2>
+                <p className="text-gray-600 dark:text-frost-300 mb-6">
+                  Please review your information and authorize us to negotiate on your behalf.
+                </p>
+
+                {/* Summary */}
+                <div className="bg-gray-50 dark:bg-midnight-800 rounded-xl p-6 mb-6 space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-frost-400">Name</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{formData.fullName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-frost-400">Email</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{formData.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-frost-400">Phone</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{formData.phone}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-frost-400">Location</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {formData.state}, {formData.zipCode}
+                    </span>
+                  </div>
+                  <hr className="border-gray-200 dark:border-white/10" />
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-frost-400">Bill Type</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {BILL_CATEGORIES.find((c) => c.id === formData.billCategory)?.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-frost-400">Provider</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{formData.provider}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-frost-400">Monthly Bill</span>
+                    <span className="font-bold text-sky-600 dark:text-neon-cyan">${formData.monthlyAmount}/mo</span>
+                  </div>
+                  {file && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 dark:text-frost-400">Bill Uploaded</span>
+                      <span className="font-medium text-green-600">✓ {file.name}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Authorization */}
+                <div className="space-y-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.consent}
+                      onChange={(e) => updateField('consent', e.target.checked)}
+                      className="mt-1 w-5 h-5 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-frost-300">
+                      I authorize Wefixbill to contact my service provider on my behalf to negotiate a better rate. 
+                      I understand my information will only be used to review and negotiate my bills.{' '}
+                      <a href="/privacy-policy" className="text-sky-600 dark:text-neon-cyan underline">
+                        Privacy Policy
+                      </a>
+                    </span>
+                  </label>
+                  {errors.consent && <p className="text-sm text-red-500">{errors.consent}</p>}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-frost-300 mb-1">
+                      Type your full name as signature *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.signature}
+                      onChange={(e) => updateField('signature', e.target.value)}
+                      className={cn(
+                        'w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-white text-lg transition-all',
+                        errors.signature
+                          ? 'border-red-500'
+                          : 'border-gray-200 dark:border-white/10 focus:border-sky-500'
+                      )}
+                      style={{ fontFamily: 'cursive' }}
+                      placeholder="Type your full name"
+                    />
+                    {errors.signature && <p className="mt-1 text-sm text-red-500">{errors.signature}</p>}
+                  </div>
+                </div>
+
+                {submitError && (
+                  <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                    <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
+                    <button
+                      onClick={handleSubmit}
+                      className="mt-2 text-sm text-red-600 dark:text-red-400 underline"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+
+                <div className="mt-8 flex gap-4">
+                  <FloatingButton onClick={handleBack} variant="secondary" fullWidth size="lg">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back
+                  </FloatingButton>
+                  <FloatingButton
+                    onClick={handleNext}
+                    fullWidth
+                    size="lg"
+                    loading={isSubmitting}
+                    disabled={!formData.consent || !formData.signature}
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                  </FloatingButton>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Success */}
+            {step === 4 && submitSuccess && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-8"
+              >
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', delay: 0.2 }}
+                  className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center"
+                >
+                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </motion.div>
+
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  Request Submitted!
+                </h2>
+                <p className="text-gray-600 dark:text-frost-300 mb-6">
+                  {submitSuccess.message}
+                </p>
+
+                <div className="bg-gray-50 dark:bg-midnight-800 rounded-xl p-4 mb-6 inline-block">
+                  <p className="text-sm text-gray-500 dark:text-frost-400">Reference ID</p>
+                  <p className="font-mono font-bold text-sky-600 dark:text-neon-cyan">{submitSuccess.referenceId}</p>
+                </div>
+
+                <div className="bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 rounded-xl p-6 text-left">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-4">What happens next?</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-bold">
+                        1
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">Review (24-48 hours)</p>
+                        <p className="text-sm text-gray-600 dark:text-frost-400">
+                          Our team reviews your submission and bill details
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-bold">
+                        2
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">Negotiation (1-2 weeks)</p>
+                        <p className="text-sm text-gray-600 dark:text-frost-400">
+                          We contact your provider and negotiate the best rate
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-bold">
+                        3
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">Results</p>
+                        <p className="text-sm text-gray-600 dark:text-frost-400">
+                          We'll email you with the outcome and any savings achieved
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8">
+                  <FloatingButton onClick={handleClose} fullWidth size="lg">
+                    Done
+                  </FloatingButton>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
     </AnimatePresence>
   )
 }
