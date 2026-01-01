@@ -14,6 +14,7 @@ import FAQAccordion from '@/components/FAQAccordion'
 import FinalCTA from '@/components/FinalCTA'
 import Footer from '@/components/Footer'
 import IntakeModal from '@/components/IntakeModal'
+import MobileBottomCTA from '@/components/MobileBottomCTA'
 
 // Dynamic imports for performance
 const AmbientFXCanvas = dynamic(() => import('@/components/AmbientFXCanvas'), {
@@ -58,6 +59,9 @@ export default function HomePage() {
 
       {/* AI Assistant Widget */}
       <AssistantWidget />
+
+      {/* Mobile Sticky CTA */}
+      <MobileBottomCTA onOpenModal={openModal} />
     </>
   )
 }

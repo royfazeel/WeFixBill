@@ -41,27 +41,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#030712' },
-  ],
+  maximumScale: 5,
+  themeColor: '#0f172a',
 }
-
-// Script to prevent FOUC (Flash of Unstyled Content) for theme
-const themeScript = `
-(function() {
-  try {
-    var theme = localStorage.getItem('wefixbill-theme');
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
-    }
-  } catch (e) {}
-})();
-`
 
 export default function RootLayout({
   children,
@@ -69,21 +51,26 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="light" suppressHydrationWarning>
+    <html lang="en" className="scroll-smooth">
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" 
+          rel="stylesheet" 
+        />
       </head>
-      <body className="font-sans overflow-x-hidden bg-white dark:bg-midnight-950 text-slate-900 dark:text-frost-100 antialiased transition-colors duration-300">
-        {/* Grid pattern background */}
-        <div className="fixed inset-0 grid-pattern pointer-events-none z-0 opacity-30 dark:opacity-100" aria-hidden="true" />
+      <body className="font-sans overflow-x-hidden bg-slate-900 text-white antialiased">
+        {/* Grid pattern background - global */}
+        <div 
+          className="fixed inset-0 grid-pattern pointer-events-none z-0 opacity-60" 
+          aria-hidden="true" 
+        />
         
-        {/* Aurora glow effects - visible in both themes but more prominent in dark */}
+        {/* Aurora glow effects - global */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-sky-400/5 dark:bg-neon-cyan/10 rounded-full blur-[150px] animate-aurora" />
-          <div className="absolute bottom-0 right-1/4 w-[800px] h-[800px] bg-purple-400/5 dark:bg-neon-purple/10 rounded-full blur-[150px] animate-aurora" style={{ animationDelay: '-4s' }} />
+          <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[150px] animate-aurora" />
+          <div className="absolute -bottom-40 -right-40 w-[800px] h-[800px] bg-violet-500/10 rounded-full blur-[150px] animate-aurora" style={{ animationDelay: '-4s' }} />
         </div>
         
         {/* Main content */}

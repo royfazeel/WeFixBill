@@ -35,8 +35,6 @@ function AnimatedCounter({
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp
       const progress = Math.min((timestamp - startTime) / duration, 1)
-      
-      // Easing function for smooth animation
       const easeOut = 1 - Math.pow(1 - progress, 3)
       setCount(Math.floor(easeOut * end))
 
@@ -58,19 +56,10 @@ function AnimatedCounter({
 
 export default function Hero({ onOpenModal }: HeroProps) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0">
-        {/* Radial gradient spotlight */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-sky-400/5 dark:bg-neon-cyan/5 rounded-full blur-[100px]" />
-        
-        {/* HUD grid lines */}
-        <div className="absolute inset-0 opacity-10 dark:opacity-10">
-          <div className="absolute top-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-sky-500 dark:via-neon-cyan to-transparent" />
-          <div className="absolute top-3/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500 dark:via-neon-purple to-transparent" />
-          <div className="absolute left-1/4 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-sky-500 dark:via-neon-cyan to-transparent" />
-          <div className="absolute right-1/4 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-purple-500 dark:via-neon-purple to-transparent" />
-        </div>
+    <section className="relative min-h-screen flex items-center justify-center pt-20 pb-12 overflow-hidden">
+      {/* Background spotlight */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyan-500/5 rounded-full blur-[100px]" />
       </div>
 
       {/* Content */}
@@ -86,22 +75,22 @@ export default function Hero({ onOpenModal }: HeroProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-slate-100 dark:bg-white/5 border border-sky-200 dark:border-neon-cyan/30 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-slate-800/80 border border-cyan-500/30 backdrop-blur-sm"
           >
-            <span className="w-2 h-2 rounded-full bg-green-500 dark:bg-neon-green animate-pulse" />
-            <span className="text-sm font-medium text-slate-700 dark:text-frost-200">
+            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-sm font-medium text-slate-200">
               No Savings = No Fee
             </span>
           </motion.div>
 
-          {/* Main headline */}
-          <h1 className="font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-slate-900 dark:text-white mb-6 leading-[1.1]">
+          {/* Main headline - HIGH CONTRAST */}
+          <h1 className="font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white mb-6 leading-[1.1]">
             Stop Overpaying.{' '}
             <span className="gradient-text-aurora">We Fix Your Bills.</span>
           </h1>
 
-          {/* Subheadline */}
-          <p className="text-lg md:text-xl text-slate-600 dark:text-frost-300 mb-10 max-w-2xl mx-auto text-balance">
+          {/* Subheadline - READABLE */}
+          <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto text-balance leading-relaxed">
             Our expert negotiators reduce your internet, cable, wireless, and utility bills. 
             You keep the savings. Pay only if we succeed.
           </p>
@@ -124,44 +113,41 @@ export default function Hero({ onOpenModal }: HeroProps) {
             >
               Start Saving Now
             </FloatingButton>
+            
             <FloatingButton
-              variant="secondary"
+              variant="outline"
               size="lg"
-              onClick={() => window.location.href = '/how-it-works'}
+              href="/how-it-works"
             >
               See How It Works
             </FloatingButton>
           </motion.div>
 
-          {/* Stats */}
+          {/* Stats - Glass cards with HIGH CONTRAST text */}
           <motion.div 
             variants={fadeInUp}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
           >
-            <div className="glass-panel p-6 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-sky-600 dark:text-neon-cyan mb-1">
-                <AnimatedCounter end={AGGREGATE_STATS.totalSaved} prefix="$" />
+            {[
+              { value: AGGREGATE_STATS.totalSaved, prefix: '$', label: 'Total Saved', color: 'text-cyan-400' },
+              { value: AGGREGATE_STATS.customersHelped, suffix: '+', label: 'Happy Customers', color: 'text-violet-400' },
+              { value: AGGREGATE_STATS.averageSavings, prefix: '$', suffix: '/mo', label: 'Avg. Savings', color: 'text-pink-400' },
+              { value: AGGREGATE_STATS.successRate, suffix: '%', label: 'Success Rate', color: 'text-green-400' },
+            ].map((stat, index) => (
+              <div 
+                key={index} 
+                className="glass-panel p-5 text-center group hover:border-cyan-500/30 transition-all"
+              >
+                <div className={`text-2xl md:text-3xl font-bold ${stat.color} mb-1`}>
+                  <AnimatedCounter 
+                    end={stat.value} 
+                    prefix={stat.prefix || ''} 
+                    suffix={stat.suffix || ''}
+                  />
+                </div>
+                <div className="text-slate-400 text-sm">{stat.label}</div>
               </div>
-              <div className="text-slate-500 dark:text-frost-400 text-sm">Total Saved</div>
-            </div>
-            <div className="glass-panel p-6 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-neon-purple mb-1">
-                <AnimatedCounter end={AGGREGATE_STATS.customersHelped} suffix="+" />
-              </div>
-              <div className="text-slate-500 dark:text-frost-400 text-sm">Happy Customers</div>
-            </div>
-            <div className="glass-panel p-6 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-pink-600 dark:text-neon-pink mb-1">
-                $<AnimatedCounter end={AGGREGATE_STATS.averageSavings} />/mo
-              </div>
-              <div className="text-slate-500 dark:text-frost-400 text-sm">Avg. Savings</div>
-            </div>
-            <div className="glass-panel p-6 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-green-600 dark:text-neon-green mb-1">
-                <AnimatedCounter end={AGGREGATE_STATS.successRate} suffix="%" />
-              </div>
-              <div className="text-slate-500 dark:text-frost-400 text-sm">Success Rate</div>
-            </div>
+            ))}
           </motion.div>
         </motion.div>
       </motion.div>
@@ -176,29 +162,21 @@ export default function Hero({ onOpenModal }: HeroProps) {
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-          className="w-6 h-10 rounded-full border-2 border-slate-300 dark:border-frost-400/30 flex items-start justify-center p-1"
+          className="w-6 h-10 rounded-full border-2 border-slate-600 flex items-start justify-center p-1"
         >
           <motion.div
             animate={{ y: [0, 12, 0], opacity: [1, 0.5, 1] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-1.5 h-3 bg-sky-500 dark:bg-neon-cyan rounded-full"
+            className="w-1.5 h-3 bg-cyan-500 rounded-full"
           />
         </motion.div>
       </motion.div>
 
-      {/* Corner decorations */}
-      <div className="absolute top-20 left-4 md:left-8">
-        <div className="hud-corner-tl w-8 h-8" />
-      </div>
-      <div className="absolute top-20 right-4 md:right-8">
-        <div className="hud-corner-tr w-8 h-8" />
-      </div>
-      <div className="absolute bottom-4 left-4 md:left-8">
-        <div className="hud-corner-bl w-8 h-8" />
-      </div>
-      <div className="absolute bottom-4 right-4 md:right-8">
-        <div className="hud-corner-br w-8 h-8" />
-      </div>
+      {/* HUD corners */}
+      <div className="absolute top-20 left-4 md:left-8"><div className="hud-corner-tl w-8 h-8" /></div>
+      <div className="absolute top-20 right-4 md:right-8"><div className="hud-corner-tr w-8 h-8" /></div>
+      <div className="absolute bottom-4 left-4 md:left-8"><div className="hud-corner-bl w-8 h-8" /></div>
+      <div className="absolute bottom-4 right-4 md:right-8"><div className="hud-corner-br w-8 h-8" /></div>
     </section>
   )
 }

@@ -1,11 +1,12 @@
 {
-  "name": "Wefixbill - Bill Negotiation Experts",
+  "name": "Wefixbill - Bill Saving Experts",
   "short_name": "Wefixbill",
   "description": "Expert bill negotiation services - we lower your bills or you pay nothing",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0ea5e9",
+  "background_color": "#0f172a",
+  "theme_color": "#06b6d4",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/favicon-192x192.png",

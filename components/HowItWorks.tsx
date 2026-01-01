@@ -74,7 +74,6 @@ interface HowItWorksProps {
 export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
   return (
     <section id="how-it-works" className="section-padding">
-      {/* Centered container */}
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -82,50 +81,52 @@ export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
           viewport={{ once: true, margin: '-100px' }}
           variants={staggerContainer}
         >
-          {/* Centered heading/subheading */}
+          {/* Header */}
           <motion.div variants={fadeInUp} className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-4 text-center">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
               How <span className="gradient-text">It Works</span>
             </h2>
-            <p className="text-lg text-slate-600 dark:text-frost-300 max-w-2xl mx-auto text-center">
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
               Six simple steps from overpaying to saving money every month
             </p>
           </motion.div>
 
+          {/* Steps Grid */}
           <div className="relative">
-            {/* Centered connection line */}
-            <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 w-full max-w-5xl h-px bg-gradient-to-r from-transparent via-sky-400/30 dark:via-neon-cyan/30 to-transparent" />
+            {/* Connection line (desktop) */}
+            <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 w-full max-w-5xl h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
 
-            {/* Centered grid with place-items-center */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 place-items-center">
-              {steps.map((step) => (
+              {steps.map((step, index) => (
                 <motion.div
                   key={step.number}
                   variants={fadeInUp}
+                  custom={index}
                   className="relative w-full max-w-md"
                 >
-                  <div className="glass-panel-hover p-6 h-full">
+                  {/* Glass card - LIGHT BACKGROUND for readability */}
+                  <div className="glass-card group h-full">
                     {/* HUD corners */}
                     <div className="hud-corner-tl" />
                     <div className="hud-corner-tr" />
                     <div className="hud-corner-bl" />
                     <div className="hud-corner-br" />
 
-                    {/* Step number */}
-                    <div className="absolute -top-3 left-6 px-3 py-1 bg-white dark:bg-midnight-900 border border-sky-300 dark:border-neon-cyan/50 rounded-full">
-                      <span className="text-sky-600 dark:text-neon-cyan font-mono text-sm">{step.number}</span>
+                    {/* Step number badge */}
+                    <div className="absolute -top-3 left-6 px-3 py-1 bg-slate-900 border border-cyan-500/50 rounded-full">
+                      <span className="text-cyan-400 font-mono text-sm font-bold">{step.number}</span>
                     </div>
 
                     {/* Icon */}
-                    <div className="w-14 h-14 rounded-xl bg-sky-100 dark:bg-neon-cyan/10 border border-sky-200 dark:border-neon-cyan/30 flex items-center justify-center text-sky-600 dark:text-neon-cyan mb-4 mt-4">
+                    <div className="w-14 h-14 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-500 mb-4 mt-2 group-hover:scale-110 transition-transform">
                       {step.icon}
                     </div>
 
-                    {/* Content */}
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                    {/* Content - DARK TEXT on light card */}
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
                       {step.title}
                     </h3>
-                    <p className="text-slate-500 dark:text-frost-400 text-sm leading-relaxed">
+                    <p className="text-slate-600 text-sm leading-relaxed">
                       {step.description}
                     </p>
                   </div>
@@ -134,6 +135,7 @@ export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
             </div>
           </div>
 
+          {/* CTA */}
           <motion.div variants={fadeInUp} className="text-center mt-12">
             <FloatingButton onClick={onOpenModal} variant="primary" size="lg">
               Get Started Now
