@@ -104,8 +104,8 @@ export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
                   custom={index}
                   className="relative w-full max-w-md"
                 >
-                  {/* Glass card - LIGHT BACKGROUND for readability */}
-                  <div className="glass-card group h-full">
+                  {/* Dark glass panel */}
+                  <div className="glass-panel p-6 group h-full hover:border-cyan-500/30 transition-all">
                     {/* HUD corners */}
                     <div className="hud-corner-tl" />
                     <div className="hud-corner-tr" />
@@ -118,15 +118,15 @@ export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
                     </div>
 
                     {/* Icon */}
-                    <div className="w-14 h-14 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-500 mb-4 mt-2 group-hover:scale-110 transition-transform">
+                    <div className="w-14 h-14 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-4 mt-2 group-hover:scale-110 transition-transform">
                       {step.icon}
                     </div>
 
-                    {/* Content - DARK TEXT on light card */}
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    {/* Content - LIGHT TEXT on dark card */}
+                    <h3 className="text-lg font-semibold text-white mb-2">
                       {step.title}
                     </h3>
-                    <p className="text-slate-600 text-sm leading-relaxed">
+                    <p className="text-slate-300 text-sm leading-relaxed">
                       {step.description}
                     </p>
                   </div>
