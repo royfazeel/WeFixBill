@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00f5ff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00a8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Background -->
+  <rect width="32" height="32" rx="6" fill="#030712"/>
+  <!-- Stylized W with bill/check mark concept -->
+  <path 
+    d="M6 8 L10 22 L16 14 L22 22 L26 8" 
+    fill="none" 
+    stroke="url(#neonGrad)" 
+    stroke-width="3" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    filter="url(#glow)"
+  />
+  <!-- Small check mark accent -->
+  <path 
+    d="M20 24 L22 26 L26 20" 
+    fill="none" 
+    stroke="#00ff88" 
+    stroke-width="2" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+  />
+</svg>
