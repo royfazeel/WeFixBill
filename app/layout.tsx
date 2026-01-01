@@ -11,13 +11,13 @@ export const metadata: Metadata = {
   authors: [{ name: 'Wefixbill' }],
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '32x32' },
-      { url: '/icon.png', type: 'image/png', sizes: '512x512' },
+      { url: '/favicon.ico?v=2', sizes: '32x32' },
+      { url: '/icon-v2.png', type: 'image/png', sizes: '512x512' },
     ],
     apple: [
-      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-icon-v2.png', sizes: '180x180', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico',
+    shortcut: '/favicon.ico?v=2',
   },
   manifest: '/site.webmanifest',
   openGraph: {
