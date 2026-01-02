@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect, memo } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import FloatingButton from './FloatingButton'
 import { cn, isValidEmail, isValidPhone, isValidZip } from '@/lib/utils'
@@ -43,61 +43,6 @@ const initialFormData: FormData = {
   consent: false,
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// MOVED OUTSIDE: These were causing the keyboard to dismiss on every keystroke
-// because they were recreated on every render when defined inside the component
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const getInputStyles = (hasError: boolean) => cn(
-  'w-full h-12 px-4 rounded-xl text-white text-sm',
-  'bg-slate-800/60 border transition-all duration-200',
-  'placeholder:text-slate-500 focus:outline-none',
-  hasError 
-    ? 'border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-    : 'border-slate-700 hover:border-slate-600 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20'
-)
-
-const getSelectStyles = (hasError: boolean) => cn(
-  getInputStyles(hasError),
-  'appearance-none cursor-pointer',
-  'bg-[url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/%3E%3C/svg%3E")]',
-  'bg-[length:20px] bg-[right_12px_center] bg-no-repeat pr-10'
-)
-
-// Memoized FormField component - MUST be outside the main component
-const FormField = memo(function FormField({ 
-  label, 
-  error, 
-  children, 
-  className = '' 
-}: { 
-  label: string
-  error?: string
-  children: React.ReactNode
-  className?: string 
-}) {
-  return (
-    <div className={className}>
-      <label className="block text-sm font-medium text-slate-300 mb-2 text-left">
-        {label}
-      </label>
-      {children}
-      <AnimatePresence>
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="text-xs text-red-400 mt-1.5 text-left"
-          >
-            {error}
-          </motion.p>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-})
-
 export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
   const [step, setStep] = useState<Step>(1)
   const [direction, setDirection] = useState(0)
@@ -135,18 +80,16 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
     setTimeout(resetForm, 300)
   }, [onClose, resetForm])
 
-  // Memoized field updater to prevent unnecessary re-renders
-  const updateField = useCallback((field: keyof FormData, value: string | boolean) => {
+  const updateField = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    setErrors((prev) => {
-      if (prev[field]) {
+    if (errors[field]) {
+      setErrors((prev) => {
         const next = { ...prev }
         delete next[field]
         return next
-      }
-      return prev
-    })
-  }, [])
+      })
+    }
+  }
 
   const validateStep1 = (): boolean => {
     const newErrors: FormErrors = {}
@@ -193,7 +136,7 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleNext = useCallback(() => {
+  const handleNext = () => {
     if (step === 1 && validateStep1()) {
       setDirection(1)
       setStep(2)
@@ -203,16 +146,16 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
     } else if (step === 3 && validateStep3()) {
       handleSubmit()
     }
-  }, [step, formData])
+  }
 
-  const handleBack = useCallback(() => {
+  const handleBack = () => {
     if (step > 1) {
       setDirection(-1)
       setStep((prev) => (prev - 1) as Step)
     }
-  }, [step])
+  }
 
-  const processFile = useCallback((selectedFile: File | undefined) => {
+  const processFile = (selectedFile: File | undefined) => {
     if (!selectedFile) return
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
     if (!allowedTypes.includes(selectedFile.type)) {
@@ -225,7 +168,7 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
     }
     setFile(selectedFile)
     setErrors((prev) => { const next = { ...prev }; delete next.file; return next })
-  }, [])
+  }
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
@@ -261,6 +204,54 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
     : []
 
   if (!isOpen) return null
+
+  // Reusable Components
+  const FormField = ({ 
+    label, 
+    error, 
+    children, 
+    className = '' 
+  }: { 
+    label: string
+    error?: string
+    children: React.ReactNode
+    className?: string 
+  }) => (
+    <div className={className}>
+      <label className="block text-sm font-medium text-slate-300 mb-2 text-left">
+        {label}
+      </label>
+      {children}
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="text-xs text-red-400 mt-1.5 text-left"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+
+  const inputStyles = (hasError: boolean) => cn(
+    'w-full h-12 px-4 rounded-xl text-white text-sm',
+    'bg-slate-800/60 border transition-all duration-200',
+    'placeholder:text-slate-500 focus:outline-none',
+    hasError 
+      ? 'border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+      : 'border-slate-700 hover:border-slate-600 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20'
+  )
+
+  const selectStyles = (hasError: boolean) => cn(
+    inputStyles(hasError),
+    'appearance-none cursor-pointer',
+    'bg-[url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/%3E%3C/svg%3E")]',
+    'bg-[length:20px] bg-[right_12px_center] bg-no-repeat pr-10'
+  )
 
   return (
     <AnimatePresence>
@@ -374,10 +365,9 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                           type="text"
                           value={formData.fullName}
                           onChange={(e) => updateField('fullName', e.target.value)}
-                          className={getInputStyles(!!errors.fullName)}
+                          className={inputStyles(!!errors.fullName)}
                           placeholder="John Smith"
                           autoComplete="name"
-                          enterKeyHint="next"
                         />
                       </FormField>
 
@@ -388,10 +378,9 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                             type="email"
                             value={formData.email}
                             onChange={(e) => updateField('email', e.target.value)}
-                            className={getInputStyles(!!errors.email)}
+                            className={inputStyles(!!errors.email)}
                             placeholder="john@email.com"
                             autoComplete="email"
-                            enterKeyHint="next"
                           />
                         </FormField>
                         <FormField label="Phone" error={errors.phone}>
@@ -399,10 +388,9 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                             type="tel"
                             value={formData.phone}
                             onChange={(e) => updateField('phone', e.target.value)}
-                            className={getInputStyles(!!errors.phone)}
+                            className={inputStyles(!!errors.phone)}
                             placeholder="(555) 123-4567"
                             autoComplete="tel"
-                            enterKeyHint="next"
                           />
                         </FormField>
                       </div>
@@ -413,7 +401,7 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                           <select
                             value={formData.state}
                             onChange={(e) => updateField('state', e.target.value)}
-                            className={getSelectStyles(!!errors.state)}
+                            className={selectStyles(!!errors.state)}
                           >
                             <option value="" className="bg-slate-800">Select</option>
                             {US_STATES.map((s) => (
@@ -426,11 +414,10 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                             type="text"
                             value={formData.zipCode}
                             onChange={(e) => updateField('zipCode', e.target.value)}
-                            className={getInputStyles(!!errors.zipCode)}
+                            className={inputStyles(!!errors.zipCode)}
                             placeholder="12345"
                             maxLength={10}
                             autoComplete="postal-code"
-                            enterKeyHint="next"
                           />
                         </FormField>
                       </div>
@@ -450,7 +437,7 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                         <select
                           value={formData.billCategory}
                           onChange={(e) => { updateField('billCategory', e.target.value); updateField('provider', '') }}
-                          className={getSelectStyles(!!errors.billCategory)}
+                          className={selectStyles(!!errors.billCategory)}
                         >
                           <option value="" className="bg-slate-800">Select category</option>
                           {BILL_CATEGORIES.map((cat) => (
@@ -466,7 +453,7 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                             <select
                               value={formData.provider}
                               onChange={(e) => updateField('provider', e.target.value)}
-                              className={getSelectStyles(!!errors.provider)}
+                              className={selectStyles(!!errors.provider)}
                             >
                               <option value="" className="bg-slate-800">Select</option>
                               {providers.map((p) => (
@@ -479,9 +466,8 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                               type="text"
                               value={formData.provider}
                               onChange={(e) => updateField('provider', e.target.value)}
-                              className={getInputStyles(!!errors.provider)}
+                              className={inputStyles(!!errors.provider)}
                               placeholder="Provider name"
-                              enterKeyHint="next"
                             />
                           )}
                         </FormField>
@@ -492,12 +478,10 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                               type="number"
                               value={formData.monthlyAmount}
                               onChange={(e) => updateField('monthlyAmount', e.target.value)}
-                              className={cn(getInputStyles(!!errors.monthlyAmount), 'pl-8')}
+                              className={cn(inputStyles(!!errors.monthlyAmount), 'pl-8')}
                               placeholder="150"
                               min="20"
                               max="5000"
-                              inputMode="decimal"
-                              enterKeyHint="done"
                             />
                           </div>
                         </FormField>
@@ -694,10 +678,8 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                           type="text"
                           value={formData.signature}
                           onChange={(e) => updateField('signature', e.target.value)}
-                          className={cn(getInputStyles(!!errors.signature), 'font-mono')}
+                          className={cn(inputStyles(!!errors.signature), 'font-mono')}
                           placeholder={formData.fullName}
-                          autoComplete="off"
-                          enterKeyHint="done"
                         />
                       </FormField>
                     </div>
