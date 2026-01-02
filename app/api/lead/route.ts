@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
     
     try {
       await resend.emails.send({
-        from: 'Wefixbill <onboarding@resend.dev>',
+        from: 'Wefixbill <notifications@wefixbill.com>',
         to: [NOTIFICATION_EMAIL],
         replyTo: email,
         subject: `New Lead: ${fullName} - ${billCategory} ($${monthlyAmount}/mo)`,
