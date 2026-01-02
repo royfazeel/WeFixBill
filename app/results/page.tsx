@@ -1,30 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import IntakeModal from '@/components/IntakeModal'
-import { formatCurrency } from '@/lib/utils'
-import { CASE_RESULTS } from '@/lib/mockData'
-import { fadeInUp, staggerContainer } from '@/lib/motion'
-
-const categories = ['all', 'internet', 'cable', 'wireless', 'utilities', 'insurance', 'subscriptions', 'security']
+import FloatingButton from '@/components/FloatingButton'
+import { AGGREGATE_STATS, CASE_RESULTS, TESTIMONIALS } from '@/lib/mockData'
 
 export default function ResultsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [activeCategory, setActiveCategory] = useState('all')
-  const [sortBy, setSortBy] = useState<'savings' | 'recent'>('savings')
-
-  const filteredResults = CASE_RESULTS
-    .filter(r => activeCategory === 'all' || r.category === activeCategory)
-    .sort((a, b) => {
-      if (sortBy === 'savings') return b.monthlySavings - a.monthlySavings
-      return new Date(b.date).getTime() - new Date(a.date).getTime()
-    })
-
-  const totalSaved = CASE_RESULTS.reduce((sum, r) => sum + r.annualSavings, 0)
-  const avgSavings = Math.round(CASE_RESULTS.reduce((sum, r) => sum + r.monthlySavings, 0) / CASE_RESULTS.length)
 
   return (
     <>
@@ -32,206 +17,153 @@ export default function ResultsPage() {
 
       <main className="pt-20">
         {/* Hero */}
-        <section className="section-padding">
+        <section className="section-padding bg-gradient-hero">
           <div className="section-container">
             <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="text-center max-w-3xl mx-auto"
             >
-              <motion.h1
-                variants={fadeInUp}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6"
-              >
-                Real <span className="gradient-text-aurora">Results</span>
-              </motion.h1>
-              <motion.p
-                variants={fadeInUp}
-                className="text-xl text-frost-300 mb-8"
-              >
-                See how we've helped customers like you save money on their bills
-              </motion.p>
-
-              {/* Stats */}
-              <motion.div variants={fadeInUp} className="grid grid-cols-3 gap-4 max-w-xl mx-auto">
-                <div className="glass-panel p-4">
-                  <div className="text-2xl font-bold text-neon-cyan">{formatCurrency(totalSaved)}</div>
-                  <div className="text-frost-400 text-sm">Total Saved</div>
-                </div>
-                <div className="glass-panel p-4">
-                  <div className="text-2xl font-bold text-neon-purple">{CASE_RESULTS.length}</div>
-                  <div className="text-frost-400 text-sm">Case Examples</div>
-                </div>
-                <div className="glass-panel p-4">
-                  <div className="text-2xl font-bold text-neon-green">${avgSavings}/mo</div>
-                  <div className="text-frost-400 text-sm">Avg. Savings</div>
-                </div>
-              </motion.div>
+              <h1 className="text-display-3 md:text-display-2 font-bold text-slate-900 mb-6">
+                Real <span className="gradient-text">results</span>
+              </h1>
+              <p className="text-body-lg text-slate-600">
+                See what we&apos;ve achieved for customers just like you.
+              </p>
             </motion.div>
           </div>
         </section>
 
-        {/* Filters */}
-        <section className="pb-8">
+        {/* Stats */}
+        <section className="py-16 bg-white border-b border-slate-100">
           <div className="section-container">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              {/* Category filters */}
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      activeCategory === cat
-                        ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30'
-                        : 'bg-white/5 text-frost-400 hover:text-white border border-transparent'
-                    }`}
-                  >
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </button>
-                ))}
-              </div>
-
-              {/* Sort */}
-              <div className="flex items-center gap-2">
-                <span className="text-frost-400 text-sm">Sort by:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'savings' | 'recent')}
-                  className="bg-midnight-800 border border-white/10 rounded-lg px-3 py-2 text-frost-200 text-sm focus:outline-none focus:border-neon-cyan/50"
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {[
+                { value: `$${(AGGREGATE_STATS.totalSaved / 1000000).toFixed(1)}M+`, label: 'Total Saved' },
+                { value: `${AGGREGATE_STATS.customersHelped.toLocaleString()}+`, label: 'Customers Helped' },
+                { value: `$${AGGREGATE_STATS.averageSavings}`, label: 'Avg Monthly Savings' },
+                { value: `${AGGREGATE_STATS.successRate}%`, label: 'Success Rate' },
+              ].map((stat, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="text-center"
                 >
-                  <option value="savings">Highest Savings</option>
-                  <option value="recent">Most Recent</option>
-                </select>
-              </div>
+                  <div className="text-3xl md:text-4xl font-bold text-stripe-purple mb-1">{stat.value}</div>
+                  <div className="text-sm text-slate-500">{stat.label}</div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* Results Grid */}
-        <section className="pb-20">
-          <div className="section-container">
-            <motion.div
-              layout
-              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              <AnimatePresence mode="popLayout">
-                {filteredResults.map((result) => (
-                  <motion.div
-                    key={result.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="glass-panel-hover p-6 group"
-                  >
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-neon-cyan/10 border border-neon-cyan/30 flex items-center justify-center">
-                          <span className="text-lg">
-                            {result.category === 'internet' && '🌐'}
-                            {result.category === 'cable' && '📺'}
-                            {result.category === 'wireless' && '📱'}
-                            {result.category === 'utilities' && '⚡'}
-                            {result.category === 'insurance' && '🛡️'}
-                            {result.category === 'subscriptions' && '🎬'}
-                            {result.category === 'security' && '🏠'}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="text-white font-semibold">{result.provider}</div>
-                          <div className="text-frost-500 text-sm">{result.location}</div>
-                        </div>
-                      </div>
-                      <div className="text-frost-500 text-sm">{result.date}</div>
-                    </div>
-
-                    {/* Before/After */}
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-red-500/10 rounded-lg p-3 text-center">
-                        <div className="text-frost-400 text-xs mb-1">Before</div>
-                        <div className="text-red-400 font-bold text-xl">{formatCurrency(result.oldBill)}/mo</div>
-                      </div>
-                      <div className="bg-neon-green/10 rounded-lg p-3 text-center">
-                        <div className="text-frost-400 text-xs mb-1">After</div>
-                        <div className="text-neon-green font-bold text-xl">{formatCurrency(result.newBill)}/mo</div>
-                      </div>
-                    </div>
-
-                    {/* Savings highlight */}
-                    <div className="bg-midnight-800/50 rounded-lg p-4 mb-4 text-center">
-                      <div className="text-frost-400 text-sm mb-1">Total Savings</div>
-                      <div className="flex items-center justify-center gap-4">
-                        <div>
-                          <span className="text-2xl font-bold text-neon-cyan">{formatCurrency(result.monthlySavings)}</span>
-                          <span className="text-frost-400 text-sm">/mo</span>
-                        </div>
-                        <div className="text-frost-500">|</div>
-                        <div>
-                          <span className="text-2xl font-bold text-neon-purple">{formatCurrency(result.annualSavings)}</span>
-                          <span className="text-frost-400 text-sm">/yr</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Story */}
-                    <p className="text-frost-400 text-sm leading-relaxed">
-                      {result.story}
-                    </p>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-
-            {filteredResults.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-frost-400">No results found for this category.</p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="section-padding bg-midnight-900/50">
+        {/* Recent Wins */}
+        <section className="section-padding">
           <div className="section-container">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="glass-panel p-10 md:p-16 text-center max-w-3xl mx-auto"
+              className="text-center mb-12"
             >
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Want Results Like These?
-              </h2>
-              <p className="text-frost-300 text-lg mb-8">
-                Join the thousands who have saved money with Wefixbill. 
-                Your savings story starts here.
-              </p>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="btn-primary text-lg px-12 py-4"
-              >
-                Start Your Free Analysis
-              </button>
-              <p className="text-frost-500 text-sm mt-4">
-                No commitment required • No savings = no fee
-              </p>
+              <h2 className="text-display-3 font-bold text-slate-900 mb-4">Recent wins</h2>
+              <p className="text-body-lg text-slate-600">Real savings from real customers</p>
             </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {CASE_RESULTS.slice(0, 6).map((win, index) => (
+                <motion.div
+                  key={win.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="card-elevated p-6"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm font-medium text-slate-500 capitalize">{win.category}</span>
+                    <span className="text-xs text-slate-400">{win.date}</span>
+                  </div>
+                  <div className="text-2xl font-bold text-green-600 mb-1">${win.monthlySavings}/mo saved</div>
+                  <div className="text-sm text-slate-600">{win.provider}</div>
+                  <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between text-xs text-slate-400">
+                    <span>Was: ${win.oldBill}/mo</span>
+                    <span>Now: ${win.newBill}/mo</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* Disclaimer */}
-        <section className="py-12">
+        {/* Testimonials */}
+        <section className="section-padding bg-surface-secondary">
           <div className="section-container">
-            <div className="text-center max-w-2xl mx-auto text-frost-500 text-sm">
-              <p>
-                * These are representative case examples. Individual results vary based on 
-                provider, location, account history, and other factors. Past results do not 
-                guarantee future outcomes.
-              </p>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-display-3 font-bold text-slate-900 mb-4">Customer stories</h2>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {TESTIMONIALS.slice(0, 3).map((testimonial, index) => (
+                <motion.div
+                  key={testimonial.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="card-elevated p-6"
+                >
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="text-slate-600 text-sm mb-4">&ldquo;{testimonial.quote}&rdquo;</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-stripe-purple/10 rounded-full flex items-center justify-center text-stripe-purple font-bold">
+                      {testimonial.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-medium text-slate-900 text-sm">{testimonial.name}</div>
+                      <div className="text-xs text-slate-500">{testimonial.location}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="section-padding">
+          <div className="section-container">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center max-w-2xl mx-auto"
+            >
+              <h2 className="text-display-3 font-bold text-slate-900 mb-6">
+                Ready to join them?
+              </h2>
+              <p className="text-body-lg text-slate-600 mb-8">
+                Start saving on your bills today. It only takes 2 minutes.
+              </p>
+              <FloatingButton onClick={() => setIsModalOpen(true)} variant="primary" size="xl">
+                Get Started — It&apos;s Free
+              </FloatingButton>
+            </motion.div>
           </div>
         </section>
       </main>

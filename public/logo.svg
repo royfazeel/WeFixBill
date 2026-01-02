@@ -1,0 +1,15 @@
+<svg width="220" height="50" viewBox="0 0 220 50" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bill/Document -->
+  <rect x="4" y="4" width="32" height="42" rx="4" fill="#635bff"/>
+  <rect x="10" y="12" width="14" height="2.5" rx="1.25" fill="white" opacity="0.6"/>
+  <rect x="10" y="18" width="20" height="2.5" rx="1.25" fill="white" opacity="0.6"/>
+  <rect x="10" y="24" width="16" height="2.5" rx="1.25" fill="white" opacity="0.6"/>
+  
+  <!-- Green checkmark circle -->
+  <circle cx="30" cy="38" r="12" fill="#10b981"/>
+  <path d="M25 38l3.5 3.5 7-7" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Text: wefixbill -->
+  <text x="50" y="32" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="24" font-weight="700" fill="#1e293b">wefix</text>
+  <text x="126" y="32" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="24" font-weight="700" fill="#635bff">bill</text>
+</svg>
