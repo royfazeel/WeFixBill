@@ -79,15 +79,15 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="border-b border-slate-200 last:border-0">
+    <div className="border-b border-frost-border last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-5 flex items-center justify-between text-left hover:text-stripe-purple transition-colors"
+        className="w-full py-5 flex items-center justify-between text-left hover:text-neon-cyan transition-colors"
       >
-        <span className="font-medium text-slate-900 pr-8">{question}</span>
+        <span className="font-medium text-white pr-8">{question}</span>
         <motion.svg
           animate={{ rotate: isOpen ? 180 : 0 }}
-          className="w-5 h-5 text-slate-400 flex-shrink-0"
+          className="w-5 h-5 text-frost-medium flex-shrink-0"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -104,7 +104,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <p className="pb-5 text-slate-600 text-sm leading-relaxed">{answer}</p>
+            <p className="pb-5 text-frost-light text-sm leading-relaxed">{answer}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -124,18 +124,18 @@ export default function FAQPage() {
 
       <main className="pt-20">
         {/* Hero */}
-        <section className="section-padding bg-gradient-hero">
-          <div className="section-container">
+        <section className="section bg-gradient-hero">
+          <div className="container-custom">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="text-center max-w-3xl mx-auto"
             >
-              <h1 className="text-display-3 md:text-display-2 font-bold text-slate-900 mb-6">
-                Frequently asked <span className="gradient-text">questions</span>
+              <h1 className="text-display-3 md:text-display-2 font-bold text-white mb-6">
+                Frequently asked <span className="gradient-text-aurora">questions</span>
               </h1>
-              <p className="text-body-lg text-slate-600">
+              <p className="text-body-lg text-frost-light">
                 Everything you need to know about our bill negotiation service.
               </p>
             </motion.div>
@@ -143,8 +143,8 @@ export default function FAQPage() {
         </section>
 
         {/* FAQ Content */}
-        <section className="section-padding">
-          <div className="section-container">
+        <section className="section">
+          <div className="container-custom">
             <div className="max-w-3xl mx-auto">
               {/* Category tabs */}
               <div className="flex flex-wrap gap-2 mb-8 justify-center">
@@ -155,8 +155,8 @@ export default function FAQPage() {
                     className={cn(
                       'px-4 py-2 rounded-lg text-sm font-medium transition-all',
                       activeCategory === cat.category
-                        ? 'bg-stripe-purple text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? 'bg-neon-cyan text-white'
+                        : 'bg-midnight-800 text-frost-light hover:bg-slate-200'
                     )}
                   >
                     {cat.category}
@@ -169,7 +169,7 @@ export default function FAQPage() {
                 key={activeCategory}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="card-elevated p-6"
+                className="glass-panel p-6"
               >
                 {currentFaqs.map((faq, index) => (
                   <FAQItem key={index} question={faq.q} answer={faq.a} />
@@ -180,25 +180,25 @@ export default function FAQPage() {
         </section>
 
         {/* Still have questions */}
-        <section className="section-padding bg-surface-secondary">
-          <div className="section-container">
+        <section className="section bg-surface-secondary">
+          <div className="container-custom">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-center max-w-2xl mx-auto"
             >
-              <h2 className="text-display-3 font-bold text-slate-900 mb-6">
+              <h2 className="text-display-3 font-bold text-white mb-6">
                 Still have questions?
               </h2>
-              <p className="text-body-lg text-slate-600 mb-8">
+              <p className="text-body-lg text-frost-light mb-8">
                 Can&apos;t find what you&apos;re looking for? Our team is here to help.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <FloatingButton variant="primary" size="lg" href="/contact">
+                <FloatingButton variant="neon" size="lg" href="/contact">
                   Contact Us
                 </FloatingButton>
-                <FloatingButton onClick={() => setIsModalOpen(true)} variant="secondary" size="lg">
+                <FloatingButton onClick={() => setIsModalOpen(true)} variant="glass" size="lg">
                   Start Saving
                 </FloatingButton>
               </div>

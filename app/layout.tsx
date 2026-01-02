@@ -32,7 +32,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#ffffff',
+  themeColor: '#030712',
 }
 
 export default function RootLayout({
@@ -41,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="dark scroll-smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -50,9 +50,26 @@ export default function RootLayout({
           rel="stylesheet" 
         />
       </head>
-      <body className="font-sans bg-white text-slate-900 antialiased overflow-x-hidden">
+      <body className="font-sans bg-midnight-950 text-white antialiased overflow-x-hidden">
+        {/* Aurora background effects */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          {/* Grid pattern */}
+          <div 
+            className="absolute inset-0 bg-grid-pattern bg-grid opacity-30"
+            style={{ backgroundSize: '50px 50px' }}
+          />
+          
+          {/* Aurora glow - top */}
+          <div className="absolute -top-40 -left-40 w-96 h-96 bg-neon-cyan/20 rounded-full blur-[120px] animate-aurora" />
+          <div className="absolute -top-20 right-1/4 w-80 h-80 bg-neon-purple/20 rounded-full blur-[100px] animate-aurora" style={{ animationDelay: '5s' }} />
+          
+          {/* Aurora glow - bottom */}
+          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-neon-pink/15 rounded-full blur-[120px] animate-aurora" style={{ animationDelay: '10s' }} />
+          <div className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-neon-purple/15 rounded-full blur-[100px] animate-aurora" style={{ animationDelay: '7s' }} />
+        </div>
+        
         {/* Main content */}
-        <div className="relative">
+        <div className="relative z-10">
           {children}
         </div>
       </body>

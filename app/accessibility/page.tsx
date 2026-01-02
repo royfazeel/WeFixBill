@@ -12,7 +12,7 @@ export default function AccessibilityPage() {
     <>
       <Navbar />
       <main className="pt-32 pb-20">
-        <div className="section-container">
+        <div className="container-custom">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-4xl font-bold text-white mb-4">Accessibility Statement</h1>
             <p className="text-frost-400 mb-8">Last updated: January 2025</p>

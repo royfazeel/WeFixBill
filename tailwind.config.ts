@@ -6,35 +6,44 @@ const config: Config = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Stripe Brand Colors
-        stripe: {
-          purple: '#635bff',
-          'purple-light': '#7c8bff',
-          'purple-dark': '#5048e5',
-          navy: '#0a2540',
-          cyan: '#00d4ff',
-          green: '#00d4aa',
-          pink: '#ff61ab',
-          orange: '#ff9f43',
+        // Dark Theme - Midnight backgrounds
+        midnight: {
+          950: '#030712',
+          900: '#0a0f1e',
+          850: '#0f172a',
+          800: '#131b2e',
+          700: '#1e293b',
+          600: '#334155',
         },
-        // Backgrounds
-        surface: {
-          primary: '#ffffff',
-          secondary: '#f6f9fc',
-          tertiary: '#f0f3f9',
+        // Neon accent colors
+        neon: {
+          cyan: '#00f5ff',
+          'cyan-glow': 'rgba(0, 245, 255, 0.5)',
+          purple: '#a855f7',
+          'purple-glow': 'rgba(168, 85, 247, 0.5)',
+          pink: '#ec4899',
+          'pink-glow': 'rgba(236, 72, 153, 0.5)',
+          green: '#22c55e',
+          'green-glow': 'rgba(34, 197, 94, 0.5)',
+          blue: '#3b82f6',
+          'blue-glow': 'rgba(59, 130, 246, 0.5)',
         },
-        // Text
-        content: {
-          primary: '#30313d',
-          secondary: '#697386',
-          muted: '#adbdcc',
+        // Frost/Glass colors
+        frost: {
+          white: 'rgba(255, 255, 255, 0.95)',
+          light: 'rgba(255, 255, 255, 0.7)',
+          medium: 'rgba(255, 255, 255, 0.5)',
+          subtle: 'rgba(255, 255, 255, 0.1)',
+          border: 'rgba(255, 255, 255, 0.15)',
         },
       },
       fontFamily: {
         sans: [
+          'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
           'Segoe UI',
@@ -53,25 +62,41 @@ const config: Config = {
         'body': ['1rem', { lineHeight: '1.6' }],
       },
       boxShadow: {
-        'stripe-sm': '0 1px 3px rgba(0, 0, 0, 0.08)',
-        'stripe': '0 2px 4px rgba(0,0,0,0.02), 0 4px 8px rgba(0,0,0,0.02), 0 8px 16px rgba(0,0,0,0.02)',
-        'stripe-md': '0 4px 8px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.04), 0 16px 32px rgba(0,0,0,0.04)',
-        'stripe-lg': '0 8px 16px rgba(0,0,0,0.06), 0 16px 32px rgba(0,0,0,0.06), 0 32px 64px rgba(0,0,0,0.06)',
-        'stripe-glow': '0 4px 14px rgba(99, 91, 255, 0.35)',
-        'stripe-glow-lg': '0 8px 20px rgba(99, 91, 255, 0.4)',
+        // Neon glow shadows
+        'neon-cyan': '0 0 20px rgba(0, 245, 255, 0.3), 0 0 40px rgba(0, 245, 255, 0.15)',
+        'neon-cyan-lg': '0 0 30px rgba(0, 245, 255, 0.4), 0 0 60px rgba(0, 245, 255, 0.2)',
+        'neon-purple': '0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(168, 85, 247, 0.15)',
+        'neon-purple-lg': '0 0 30px rgba(168, 85, 247, 0.4), 0 0 60px rgba(168, 85, 247, 0.2)',
+        'neon-pink': '0 0 20px rgba(236, 72, 153, 0.3), 0 0 40px rgba(236, 72, 153, 0.15)',
+        'neon-pink-lg': '0 0 30px rgba(236, 72, 153, 0.4), 0 0 60px rgba(236, 72, 153, 0.2)',
+        'neon-green': '0 0 20px rgba(34, 197, 94, 0.3), 0 0 40px rgba(34, 197, 94, 0.15)',
+        // Glass shadows
+        'glass': '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        'glass-lg': '0 25px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+        // Button shadows
+        'btn-glow': '0 4px 15px rgba(0, 245, 255, 0.4), 0 0 30px rgba(0, 245, 255, 0.2)',
+        'btn-glow-hover': '0 8px 25px rgba(0, 245, 255, 0.5), 0 0 50px rgba(0, 245, 255, 0.3)',
       },
       transitionTimingFunction: {
-        'stripe': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        'stripe-spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'neon': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
       animation: {
         'fade-up': 'fadeUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
         'fade-in': 'fadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
         'scale-in': 'scaleIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
-        'float': 'subtleFloat 6s ease-in-out infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'float-slow': 'float 8s ease-in-out infinite',
+        'float-fast': 'float 4s ease-in-out infinite',
+        'glow-pulse': 'glowPulse 3s ease-in-out infinite',
+        'shimmer': 'shimmer 2s linear infinite',
+        'aurora': 'aurora 15s ease-in-out infinite',
+        'border-flow': 'borderFlow 3s linear infinite',
+        'scan': 'scan 2s linear infinite',
         'gradient': 'gradientShift 8s ease infinite',
-        'aurora': 'auroraGlow 15s ease-in-out infinite',
         'pulse-soft': 'pulseSoft 3s ease-in-out infinite',
+        'bounce-subtle': 'bounceSubtle 2s ease-in-out infinite',
       },
       keyframes: {
         fadeUp: {
@@ -86,29 +111,53 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'scale(0.95)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
-        subtleFloat: {
+        float: {
           '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-6px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        glowPulse: {
+          '0%, 100%': { opacity: '1', boxShadow: '0 0 20px rgba(0, 245, 255, 0.3)' },
+          '50%': { opacity: '0.8', boxShadow: '0 0 40px rgba(0, 245, 255, 0.5)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+        aurora: {
+          '0%, 100%': { opacity: '0.5', transform: 'translate(0, 0) scale(1)' },
+          '33%': { opacity: '0.7', transform: 'translate(30px, -20px) scale(1.05)' },
+          '66%': { opacity: '0.6', transform: 'translate(-20px, 10px) scale(0.98)' },
+        },
+        borderFlow: {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        scan: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(100%)' },
         },
         gradientShift: {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
         },
-        auroraGlow: {
-          '0%, 100%': { opacity: '0.5', transform: 'translate(0, 0) scale(1)' },
-          '33%': { opacity: '0.7', transform: 'translate(30px, -20px) scale(1.05)' },
-          '66%': { opacity: '0.6', transform: 'translate(-20px, 10px) scale(0.98)' },
-        },
         pulseSoft: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.7' },
         },
+        bounceSubtle: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' },
+        },
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-stripe': 'linear-gradient(135deg, #635bff 0%, #00d4ff 100%)',
-        'gradient-purple': 'linear-gradient(180deg, #7c8bff 0%, #635bff 100%)',
-        'gradient-hero': 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 91, 255, 0.15), transparent)',
+        'gradient-neon': 'linear-gradient(135deg, #00f5ff 0%, #a855f7 50%, #ec4899 100%)',
+        'gradient-aurora': 'linear-gradient(135deg, #00f5ff 0%, #a855f7 100%)',
+        'gradient-hero': 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 245, 255, 0.15), transparent)',
+        'grid-pattern': 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)',
+      },
+      backgroundSize: {
+        'grid': '50px 50px',
       },
     },
   },

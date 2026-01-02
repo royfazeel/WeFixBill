@@ -17,18 +17,18 @@ export default function ResultsPage() {
 
       <main className="pt-20">
         {/* Hero */}
-        <section className="section-padding bg-gradient-hero">
-          <div className="section-container">
+        <section className="section bg-gradient-hero">
+          <div className="container-custom">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="text-center max-w-3xl mx-auto"
             >
-              <h1 className="text-display-3 md:text-display-2 font-bold text-slate-900 mb-6">
-                Real <span className="gradient-text">results</span>
+              <h1 className="text-display-3 md:text-display-2 font-bold text-white mb-6">
+                Real <span className="gradient-text-aurora">results</span>
               </h1>
-              <p className="text-body-lg text-slate-600">
+              <p className="text-body-lg text-frost-light">
                 See what we&apos;ve achieved for customers just like you.
               </p>
             </motion.div>
@@ -36,8 +36,8 @@ export default function ResultsPage() {
         </section>
 
         {/* Stats */}
-        <section className="py-16 bg-white border-b border-slate-100">
-          <div className="section-container">
+        <section className="py-16 bg-midnight-900 border-b border-frost-border">
+          <div className="container-custom">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
                 { value: `$${(AGGREGATE_STATS.totalSaved / 1000000).toFixed(1)}M+`, label: 'Total Saved' },
@@ -53,8 +53,8 @@ export default function ResultsPage() {
                   transition={{ delay: index * 0.1 }}
                   className="text-center"
                 >
-                  <div className="text-3xl md:text-4xl font-bold text-stripe-purple mb-1">{stat.value}</div>
-                  <div className="text-sm text-slate-500">{stat.label}</div>
+                  <div className="text-3xl md:text-4xl font-bold text-neon-cyan mb-1">{stat.value}</div>
+                  <div className="text-sm text-frost-medium">{stat.label}</div>
                 </motion.div>
               ))}
             </div>
@@ -62,16 +62,16 @@ export default function ResultsPage() {
         </section>
 
         {/* Recent Wins */}
-        <section className="section-padding">
-          <div className="section-container">
+        <section className="section">
+          <div className="container-custom">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h2 className="text-display-3 font-bold text-slate-900 mb-4">Recent wins</h2>
-              <p className="text-body-lg text-slate-600">Real savings from real customers</p>
+              <h2 className="text-display-3 font-bold text-white mb-4">Recent wins</h2>
+              <p className="text-body-lg text-frost-light">Real savings from real customers</p>
             </motion.div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -82,15 +82,15 @@ export default function ResultsPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="card-elevated p-6"
+                  className="glass-panel p-6"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm font-medium text-slate-500 capitalize">{win.category}</span>
-                    <span className="text-xs text-slate-400">{win.date}</span>
+                    <span className="text-sm font-medium text-frost-medium capitalize">{win.category}</span>
+                    <span className="text-xs text-frost-medium">{win.date}</span>
                   </div>
-                  <div className="text-2xl font-bold text-green-600 mb-1">${win.monthlySavings}/mo saved</div>
-                  <div className="text-sm text-slate-600">{win.provider}</div>
-                  <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between text-xs text-slate-400">
+                  <div className="text-2xl font-bold text-neon-green mb-1">${win.monthlySavings}/mo saved</div>
+                  <div className="text-sm text-frost-light">{win.provider}</div>
+                  <div className="mt-4 pt-4 border-t border-frost-border flex justify-between text-xs text-frost-medium">
                     <span>Was: ${win.oldBill}/mo</span>
                     <span>Now: ${win.newBill}/mo</span>
                   </div>
@@ -101,15 +101,15 @@ export default function ResultsPage() {
         </section>
 
         {/* Testimonials */}
-        <section className="section-padding bg-surface-secondary">
-          <div className="section-container">
+        <section className="section bg-surface-secondary">
+          <div className="container-custom">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h2 className="text-display-3 font-bold text-slate-900 mb-4">Customer stories</h2>
+              <h2 className="text-display-3 font-bold text-white mb-4">Customer stories</h2>
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -120,7 +120,7 @@ export default function ResultsPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="card-elevated p-6"
+                  className="glass-panel p-6"
                 >
                   <div className="flex gap-1 mb-4">
                     {[...Array(5)].map((_, i) => (
@@ -129,14 +129,14 @@ export default function ResultsPage() {
                       </svg>
                     ))}
                   </div>
-                  <p className="text-slate-600 text-sm mb-4">&ldquo;{testimonial.quote}&rdquo;</p>
+                  <p className="text-frost-light text-sm mb-4">&ldquo;{testimonial.quote}&rdquo;</p>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-stripe-purple/10 rounded-full flex items-center justify-center text-stripe-purple font-bold">
+                    <div className="w-10 h-10 bg-neon-cyan/10 rounded-full flex items-center justify-center text-neon-cyan font-bold">
                       {testimonial.name.charAt(0)}
                     </div>
                     <div>
-                      <div className="font-medium text-slate-900 text-sm">{testimonial.name}</div>
-                      <div className="text-xs text-slate-500">{testimonial.location}</div>
+                      <div className="font-medium text-white text-sm">{testimonial.name}</div>
+                      <div className="text-xs text-frost-medium">{testimonial.location}</div>
                     </div>
                   </div>
                 </motion.div>
@@ -146,21 +146,21 @@ export default function ResultsPage() {
         </section>
 
         {/* CTA */}
-        <section className="section-padding">
-          <div className="section-container">
+        <section className="section">
+          <div className="container-custom">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-center max-w-2xl mx-auto"
             >
-              <h2 className="text-display-3 font-bold text-slate-900 mb-6">
+              <h2 className="text-display-3 font-bold text-white mb-6">
                 Ready to join them?
               </h2>
-              <p className="text-body-lg text-slate-600 mb-8">
+              <p className="text-body-lg text-frost-light mb-8">
                 Start saving on your bills today. It only takes 2 minutes.
               </p>
-              <FloatingButton onClick={() => setIsModalOpen(true)} variant="primary" size="xl">
+              <FloatingButton onClick={() => setIsModalOpen(true)} variant="neon" size="xl">
                 Get Started — It&apos;s Free
               </FloatingButton>
             </motion.div>

@@ -25,18 +25,18 @@ export default function ServicesPage() {
 
       <main className="pt-20">
         {/* Hero */}
-        <section className="section-padding bg-gradient-hero">
-          <div className="section-container">
+        <section className="section bg-gradient-hero">
+          <div className="container-custom">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="text-center max-w-3xl mx-auto"
             >
-              <h1 className="text-display-3 md:text-display-2 font-bold text-slate-900 mb-6">
-                Bills we <span className="gradient-text">negotiate</span>
+              <h1 className="text-display-3 md:text-display-2 font-bold text-white mb-6">
+                Bills we <span className="gradient-text-aurora">negotiate</span>
               </h1>
-              <p className="text-body-lg text-slate-600">
+              <p className="text-body-lg text-frost-light">
                 From internet and cable to wireless and utilities, we negotiate all your recurring bills.
               </p>
             </motion.div>
@@ -44,8 +44,8 @@ export default function ServicesPage() {
         </section>
 
         {/* Services Grid */}
-        <section className="section-padding">
-          <div className="section-container">
+        <section className="section">
+          <div className="container-custom">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {services.map((service, index) => (
                 <motion.div
@@ -54,12 +54,12 @@ export default function ServicesPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="card-elevated p-6"
+                  className="glass-panel p-6"
                 >
                   <div className="text-4xl mb-4">{service.icon}</div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">{service.title}</h3>
-                  <p className="text-slate-600 text-sm mb-4">{service.description}</p>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full">
+                  <h3 className="text-lg font-bold text-white mb-2">{service.title}</h3>
+                  <p className="text-frost-light text-sm mb-4">{service.description}</p>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-neon-green/10 text-neon-green text-xs font-medium rounded-full">
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
@@ -72,21 +72,21 @@ export default function ServicesPage() {
         </section>
 
         {/* CTA */}
-        <section className="section-padding bg-surface-secondary">
-          <div className="section-container">
+        <section className="section bg-surface-secondary">
+          <div className="container-custom">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-center max-w-2xl mx-auto"
             >
-              <h2 className="text-display-3 font-bold text-slate-900 mb-6">
+              <h2 className="text-display-3 font-bold text-white mb-6">
                 Don&apos;t see your bill?
               </h2>
-              <p className="text-body-lg text-slate-600 mb-8">
+              <p className="text-body-lg text-frost-light mb-8">
                 We negotiate many other types of bills. Contact us to see if we can help.
               </p>
-              <FloatingButton onClick={() => setIsModalOpen(true)} variant="primary" size="xl">
+              <FloatingButton onClick={() => setIsModalOpen(true)} variant="neon" size="xl">
                 Get Started
               </FloatingButton>
             </motion.div>

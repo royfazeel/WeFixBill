@@ -32,30 +32,40 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-slate-900 text-white">
-      <div className="section-container">
+    <footer className="relative bg-midnight-950 border-t border-frost-border">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-midnight-900/50 to-transparent pointer-events-none" />
+      
+      <div className="relative container-custom">
         {/* Main Footer */}
         <div className="py-16 grid grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-4">
-              {/* Bill + Checkmark Icon */}
+              {/* Neon Bill + Checkmark Icon */}
               <div className="w-9 h-9 flex-shrink-0">
-                <svg viewBox="0 0 512 512" className="w-full h-full">
-                  <rect width="512" height="512" rx="96" fill="#635bff"/>
-                  <rect x="100" y="80" width="200" height="24" rx="12" fill="white" opacity="0.5"/>
-                  <rect x="100" y="130" width="280" height="24" rx="12" fill="white" opacity="0.5"/>
-                  <rect x="100" y="180" width="240" height="24" rx="12" fill="white" opacity="0.5"/>
-                  <rect x="100" y="230" width="180" height="24" rx="12" fill="white" opacity="0.5"/>
-                  <circle cx="360" cy="360" r="120" fill="#10b981"/>
+                <svg viewBox="0 0 512 512" className="w-full h-full drop-shadow-[0_0_10px_rgba(0,245,255,0.3)]">
+                  <rect width="512" height="512" rx="96" fill="#0a0f1e"/>
+                  <rect width="512" height="512" rx="96" fill="url(#footerNeonGradient)" opacity="0.3"/>
+                  <rect x="100" y="80" width="200" height="24" rx="12" fill="#00f5ff" opacity="0.4"/>
+                  <rect x="100" y="130" width="280" height="24" rx="12" fill="#00f5ff" opacity="0.4"/>
+                  <rect x="100" y="180" width="240" height="24" rx="12" fill="#00f5ff" opacity="0.4"/>
+                  <rect x="100" y="230" width="180" height="24" rx="12" fill="#00f5ff" opacity="0.4"/>
+                  <circle cx="360" cy="360" r="120" fill="#22c55e"/>
                   <path d="M300 360 L340 400 L420 320" stroke="white" strokeWidth="32" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                  <defs>
+                    <linearGradient id="footerNeonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#00f5ff"/>
+                      <stop offset="100%" stopColor="#a855f7"/>
+                    </linearGradient>
+                  </defs>
                 </svg>
               </div>
-              <span className="font-bold text-lg">
-                wefix<span className="text-stripe-purple-light">bill</span>
+              <span className="font-bold text-lg text-white">
+                wefix<span className="text-neon-cyan">bill</span>
               </span>
             </Link>
-            <p className="text-slate-400 text-sm mb-6 max-w-xs">
+            <p className="text-frost-medium text-sm mb-6 max-w-xs">
               Expert bill negotiation services that save you money every month.
             </p>
             {/* Social Links */}
@@ -67,7 +77,7 @@ export default function Footer() {
                 <a
                   key={social.name}
                   href="#"
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:bg-stripe-purple hover:text-white transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-midnight-800 text-frost-medium hover:bg-neon-cyan hover:text-midnight-950 transition-all duration-300 hover:shadow-neon-cyan"
                   aria-label={social.name}
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -84,7 +94,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-slate-400 hover:text-white transition-colors">
+                  <Link href={link.href} className="text-sm text-frost-medium hover:text-neon-cyan transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -97,7 +107,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {footerLinks.services.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-slate-400 hover:text-white transition-colors">
+                  <Link href={link.href} className="text-sm text-frost-medium hover:text-neon-cyan transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -110,7 +120,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {footerLinks.resources.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-slate-400 hover:text-white transition-colors">
+                  <Link href={link.href} className="text-sm text-frost-medium hover:text-neon-cyan transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -123,7 +133,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-slate-400 hover:text-white transition-colors">
+                  <Link href={link.href} className="text-sm text-frost-medium hover:text-neon-cyan transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -133,13 +143,13 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="py-6 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-slate-500">
+        <div className="py-6 border-t border-frost-border flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-frost-medium">
             © {currentYear} Wefixbill. All rights reserved.
           </p>
-          <div className="flex items-center gap-6 text-sm text-slate-500">
+          <div className="flex items-center gap-6 text-sm text-frost-medium">
             <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 text-neon-green" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               SSL Secured

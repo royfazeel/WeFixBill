@@ -13,6 +13,7 @@ const steps = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     ),
+    color: 'neon-cyan',
   },
   {
     number: '02',
@@ -23,6 +24,7 @@ const steps = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
       </svg>
     ),
+    color: 'neon-purple',
   },
   {
     number: '03',
@@ -33,6 +35,7 @@ const steps = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
       </svg>
     ),
+    color: 'neon-pink',
   },
   {
     number: '04',
@@ -43,6 +46,7 @@ const steps = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
+    color: 'neon-green',
   },
 ]
 
@@ -52,11 +56,8 @@ interface HowItWorksProps {
 
 export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
   return (
-    <section className="section-padding bg-surface-secondary relative overflow-hidden">
-      {/* Background accent */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-hero opacity-50" />
-      
-      <div className="section-container relative z-10">
+    <section className="section relative overflow-hidden">
+      <div className="container-custom relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -65,10 +66,10 @@ export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-center mb-16"
         >
-          <h2 className="text-display-3 md:text-display-2 font-bold text-slate-900 mb-4">
-            How it <span className="gradient-text">works</span>
+          <h2 className="text-display-3 md:text-display-2 font-bold text-white mb-4">
+            How it <span className="gradient-text-aurora">works</span>
           </h2>
-          <p className="text-body-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="text-body-lg text-frost-light max-w-2xl mx-auto">
             Four simple steps to start saving money on your monthly bills
           </p>
         </motion.div>
@@ -87,22 +88,22 @@ export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
                 ease: [0.25, 0.46, 0.45, 0.94] 
               }}
             >
-              <div className="card-elevated p-6 h-full">
+              <div className="glass-panel-hover p-6 h-full hud-corners group">
                 {/* Step number */}
-                <div className="text-xs font-bold text-stripe-purple mb-4 tracking-wider">
+                <div className={`text-xs font-bold text-${step.color} mb-4 tracking-wider`}>
                   STEP {step.number}
                 </div>
                 
                 {/* Icon */}
-                <div className="feature-icon mb-4">
+                <div className={`w-12 h-12 rounded-xl bg-${step.color}/10 border border-${step.color}/30 flex items-center justify-center text-${step.color} mb-4 group-hover:shadow-${step.color} transition-all duration-300`}>
                   {step.icon}
                 </div>
 
                 {/* Content */}
-                <h3 className="text-heading-2 font-semibold text-slate-900 mb-2">
+                <h3 className="text-heading-2 font-semibold text-white mb-2">
                   {step.title}
                 </h3>
-                <p className="text-body text-slate-600">
+                <p className="text-body text-frost-medium">
                   {step.description}
                 </p>
               </div>
@@ -118,10 +119,10 @@ export default function HowItWorks({ onOpenModal }: HowItWorksProps) {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center"
         >
-          <FloatingButton onClick={onOpenModal} variant="primary" size="xl">
+          <FloatingButton onClick={onOpenModal} variant="neon" size="xl" floating>
             Get Started — It&apos;s Free
           </FloatingButton>
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-frost-medium">
             No credit card required. Only pay when we save you money.
           </p>
         </motion.div>

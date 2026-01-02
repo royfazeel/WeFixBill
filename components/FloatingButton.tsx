@@ -4,7 +4,7 @@ import { forwardRef, ReactNode } from 'react'
 import { motion, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline'
+export type ButtonVariant = 'neon' | 'neon-purple' | 'neon-pink' | 'glass' | 'ghost' | 'outline'
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl'
 
 interface FloatingButtonProps {
@@ -20,38 +20,51 @@ interface FloatingButtonProps {
   onClick?: () => void
   type?: 'button' | 'submit' | 'reset'
   href?: string
+  floating?: boolean
+  floatDelay?: number
+  glowPulse?: boolean
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: cn(
-    'text-white font-semibold',
-    'bg-gradient-to-b from-stripe-purple-light to-stripe-purple',
-    'shadow-stripe-glow',
-    'hover:shadow-stripe-glow-lg'
+  neon: cn(
+    'text-midnight-950 font-semibold',
+    'bg-gradient-to-r from-neon-cyan to-neon-cyan',
+    'shadow-btn-glow',
+    'hover:shadow-btn-glow-hover'
   ),
-  secondary: cn(
-    'text-stripe-purple font-semibold',
-    'bg-white border border-slate-200',
-    'shadow-stripe-sm',
-    'hover:border-stripe-purple/30 hover:bg-stripe-purple/5',
-    'hover:shadow-md'
+  'neon-purple': cn(
+    'text-white font-semibold',
+    'bg-gradient-to-r from-neon-purple to-neon-purple',
+    'shadow-neon-purple',
+    'hover:shadow-neon-purple-lg'
+  ),
+  'neon-pink': cn(
+    'text-white font-semibold',
+    'bg-gradient-to-r from-neon-pink to-neon-pink',
+    'shadow-neon-pink',
+    'hover:shadow-neon-pink-lg'
+  ),
+  glass: cn(
+    'text-white font-semibold',
+    'bg-frost-subtle backdrop-blur-md border border-frost-border',
+    'hover:border-neon-cyan/30 hover:shadow-neon-cyan'
   ),
   ghost: cn(
-    'text-slate-600 font-medium',
+    'text-frost-light font-medium',
     'bg-transparent',
-    'hover:text-stripe-purple hover:bg-slate-50'
+    'hover:text-white hover:bg-frost-subtle'
   ),
   outline: cn(
-    'text-stripe-purple font-semibold',
-    'bg-transparent border-2 border-stripe-purple/30',
-    'hover:border-stripe-purple hover:bg-stripe-purple/5'
+    'text-neon-cyan font-semibold',
+    'bg-transparent border-2 border-neon-cyan/30',
+    'hover:border-neon-cyan hover:bg-neon-cyan/10 hover:shadow-neon-cyan'
   ),
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
   sm: 'px-4 py-2 text-sm gap-1.5 rounded-lg',
-  md: 'px-5 py-2.5 text-sm gap-2 rounded-lg',
-  lg: 'px-6 py-3 text-base gap-2 rounded-lg',
+  md: 'px-5 py-2.5 text-sm gap-2 rounded-xl',
+  lg: 'px-6 py-3 text-base gap-2 rounded-xl',
   xl: 'px-8 py-4 text-lg gap-2.5 rounded-xl',
 }
 
@@ -59,7 +72,7 @@ const FloatingButton = forwardRef<HTMLButtonElement, FloatingButtonProps>(
   (
     {
       children,
-      variant = 'primary',
+      variant = 'neon',
       size = 'md',
       fullWidth = false,
       loading = false,
@@ -70,13 +83,16 @@ const FloatingButton = forwardRef<HTMLButtonElement, FloatingButtonProps>(
       onClick,
       type = 'button',
       href,
+      floating = false,
+      floatDelay = 0,
+      glowPulse = false,
     },
     ref
   ) => {
     const baseStyles = cn(
       'relative inline-flex items-center justify-center',
-      'transition-all duration-200 ease-stripe',
-      'focus:outline-none focus:ring-4 focus:ring-stripe-purple/20',
+      'transition-all duration-300 ease-neon',
+      'focus:outline-none focus:ring-2 focus:ring-neon-cyan/50 focus:ring-offset-2 focus:ring-offset-midnight-950',
       'disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
       fullWidth && 'w-full'
     )
@@ -110,16 +126,55 @@ const FloatingButton = forwardRef<HTMLButtonElement, FloatingButtonProps>(
             )}
           </>
         )}
+        
+        {/* Shimmer effect overlay */}
+        <span className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+          <span 
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%)',
+            }}
+          />
+        </span>
       </>
     )
 
+    // Floating animation variants
+    const floatingAnimation = floating ? {
+      y: [0, -8, 0],
+      transition: {
+        duration: 3,
+        ease: 'easeInOut',
+        repeat: Infinity,
+        delay: floatDelay,
+      }
+    } : {}
+
+    const hoverAnimation = !disabled && !loading ? {
+      y: -3,
+      scale: 1.02,
+    } : {}
+
+    const tapAnimation = !disabled && !loading ? {
+      y: 0,
+      scale: 0.98,
+    } : {}
+
     const motionProps: HTMLMotionProps<'button'> = {
-      className: cn(baseStyles, variantStyles[variant], sizeStyles[size], className),
+      className: cn(
+        baseStyles, 
+        variantStyles[variant], 
+        sizeStyles[size], 
+        glowPulse && 'animate-glow-pulse',
+        'group',
+        className
+      ),
       disabled: disabled || loading,
       onClick,
       type,
-      whileHover: !disabled && !loading ? { y: -2 } : {},
-      whileTap: !disabled && !loading ? { y: 0, scale: 0.98 } : {},
+      animate: floatingAnimation,
+      whileHover: hoverAnimation,
+      whileTap: tapAnimation,
       transition: { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] },
     }
 

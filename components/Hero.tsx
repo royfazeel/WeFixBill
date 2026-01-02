@@ -9,7 +9,7 @@ interface HeroProps {
   onOpenModal: () => void
 }
 
-// Stripe-style animation variants
+// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -76,26 +76,8 @@ function AnimatedCounter({
 export default function Hero({ onOpenModal }: HeroProps) {
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-      {/* Background gradient - Stripe style */}
-      <div className="absolute inset-0 bg-gradient-hero" />
-      
-      {/* Subtle grid pattern */}
-      <div className="absolute inset-0 bg-grid opacity-50" />
-      
-      {/* Aurora blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full animate-aurora"
-          style={{ background: 'radial-gradient(circle, rgba(99, 91, 255, 0.15) 0%, transparent 70%)' }}
-        />
-        <div 
-          className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full animate-aurora"
-          style={{ background: 'radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%)', animationDelay: '-5s' }}
-        />
-      </div>
-
       {/* Content */}
-      <div className="relative z-10 section-container w-full pt-32 pb-20">
+      <div className="relative z-10 container-custom w-full pt-32 pb-20">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -104,8 +86,8 @@ export default function Hero({ onOpenModal }: HeroProps) {
         >
           {/* Trust badge */}
           <motion.div variants={itemVariants} className="mb-8">
-            <span className="trust-badge">
-              <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+            <span className="badge-green">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               No savings, no fee — Risk-free guarantee
@@ -115,16 +97,16 @@ export default function Hero({ onOpenModal }: HeroProps) {
           {/* Headline */}
           <motion.h1 
             variants={itemVariants}
-            className="text-display-2 md:text-display-1 font-bold text-slate-900 mb-6"
+            className="text-display-2 md:text-display-1 font-bold text-white mb-6"
           >
             Stop overpaying.{' '}
-            <span className="gradient-text">We fix your bills.</span>
+            <span className="gradient-text-aurora">We fix your bills.</span>
           </motion.h1>
 
           {/* Subheadline */}
           <motion.p 
             variants={itemVariants}
-            className="text-body-lg text-slate-600 mb-10 max-w-2xl"
+            className="text-body-lg text-frost-light mb-10 max-w-2xl"
           >
             Our expert negotiators reduce your internet, cable, wireless, and utility bills. 
             You keep 100% of the first month&apos;s savings. Pay only when we succeed.
@@ -137,8 +119,9 @@ export default function Hero({ onOpenModal }: HeroProps) {
           >
             <FloatingButton
               onClick={onOpenModal}
-              variant="primary"
+              variant="neon"
               size="xl"
+              floating
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -149,7 +132,7 @@ export default function Hero({ onOpenModal }: HeroProps) {
               Start Saving Now
             </FloatingButton>
             
-            <FloatingButton variant="secondary" size="xl" href="/how-it-works">
+            <FloatingButton variant="glass" size="xl" href="/how-it-works">
               See How It Works
             </FloatingButton>
           </motion.div>
@@ -160,12 +143,17 @@ export default function Hero({ onOpenModal }: HeroProps) {
             className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10"
           >
             {[
-              { value: AGGREGATE_STATS.totalSaved, prefix: '$', label: 'Total Saved', color: 'text-stripe-purple' },
-              { value: AGGREGATE_STATS.customersHelped, suffix: '+', label: 'Customers', color: 'text-stripe-cyan' },
-              { value: AGGREGATE_STATS.averageSavings, prefix: '$', label: 'Avg. Monthly Savings', color: 'text-stripe-green' },
-              { value: AGGREGATE_STATS.successRate, suffix: '%', label: 'Success Rate', color: 'text-stripe-orange' },
+              { value: AGGREGATE_STATS.totalSaved, prefix: '$', label: 'Total Saved', color: 'text-neon-purple' },
+              { value: AGGREGATE_STATS.customersHelped, suffix: '+', label: 'Customers', color: 'text-neon-cyan' },
+              { value: AGGREGATE_STATS.averageSavings, prefix: '$', label: 'Avg. Monthly Savings', color: 'text-neon-green' },
+              { value: AGGREGATE_STATS.successRate, suffix: '%', label: 'Success Rate', color: 'text-neon-pink' },
             ].map((stat, index) => (
-              <div key={index} className="text-left">
+              <motion.div 
+                key={index} 
+                className="text-left glass-panel p-4 hud-corners"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+              >
                 <div className={`text-3xl md:text-4xl font-bold ${stat.color} mb-1`}>
                   <AnimatedCounter
                     end={stat.value}
@@ -173,23 +161,23 @@ export default function Hero({ onOpenModal }: HeroProps) {
                     suffix={stat.suffix || ''}
                   />
                 </div>
-                <div className="text-slate-500 text-sm">{stat.label}</div>
-              </div>
+                <div className="text-frost-medium text-sm">{stat.label}</div>
+              </motion.div>
             ))}
           </motion.div>
         </motion.div>
 
-        {/* Trust logos placeholder */}
+        {/* Trust logos */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 0.8 }}
-          className="mt-20 pt-10 border-t border-slate-200"
+          className="mt-20 pt-10 border-t border-frost-border"
         >
-          <p className="text-sm text-slate-400 mb-6">Trusted by customers who save with providers like</p>
-          <div className="flex flex-wrap items-center gap-8 opacity-50">
+          <p className="text-sm text-frost-medium mb-6">Trusted by customers who save with providers like</p>
+          <div className="flex flex-wrap items-center gap-8 opacity-60">
             {['AT&T', 'Comcast', 'Verizon', 'Spectrum', 'T-Mobile'].map((brand) => (
-              <span key={brand} className="text-lg font-semibold text-slate-400">
+              <span key={brand} className="text-lg font-semibold text-frost-light hover:text-neon-cyan transition-colors">
                 {brand}
               </span>
             ))}

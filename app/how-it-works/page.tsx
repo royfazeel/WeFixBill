@@ -94,21 +94,21 @@ export default function HowItWorksPage() {
 
       <main className="pt-20">
         {/* Hero */}
-        <section className="section-padding bg-gradient-hero">
-          <div className="section-container">
+        <section className="section bg-gradient-hero">
+          <div className="container-custom">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="text-center max-w-3xl mx-auto"
             >
-              <h1 className="text-display-3 md:text-display-2 font-bold text-slate-900 mb-6">
-                How <span className="gradient-text">Wefixbill</span> works
+              <h1 className="text-display-3 md:text-display-2 font-bold text-white mb-6">
+                How <span className="gradient-text-aurora">Wefixbill</span> works
               </h1>
-              <p className="text-body-lg text-slate-600 mb-8">
+              <p className="text-body-lg text-frost-light mb-8">
                 Our proven process has saved customers over $2 million in just a few simple steps.
               </p>
-              <FloatingButton onClick={() => setIsModalOpen(true)} variant="primary" size="xl">
+              <FloatingButton onClick={() => setIsModalOpen(true)} variant="neon" size="xl">
                 Start Saving Now
               </FloatingButton>
             </motion.div>
@@ -116,8 +116,8 @@ export default function HowItWorksPage() {
         </section>
 
         {/* Steps */}
-        <section className="section-padding">
-          <div className="section-container">
+        <section className="section">
+          <div className="container-custom">
             <div className="max-w-4xl mx-auto">
               {steps.map((step, index) => (
                 <motion.div
@@ -143,20 +143,20 @@ export default function HowItWorksPage() {
 
                     {/* Content */}
                     <div className="flex-1 pt-1">
-                      <h3 className="text-xl font-bold text-slate-900 mb-2">{step.title}</h3>
-                      <p className="text-slate-600 mb-4">{step.description}</p>
+                      <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
+                      <p className="text-frost-light mb-4">{step.description}</p>
                       
-                      <div className="card-elevated p-6">
+                      <div className="glass-panel p-6">
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="feature-icon">
+                          <div className="w-10 h-10 rounded-xl bg-neon-cyan/10 border border-neon-cyan/30 flex items-center justify-center text-neon-cyan">
                             {step.icon}
                           </div>
-                          <span className="text-sm font-medium text-slate-500">What happens:</span>
+                          <span className="text-sm font-medium text-frost-medium">What happens:</span>
                         </div>
                         <ul className="space-y-2">
                           {step.details.map((detail, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                              <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <li key={i} className="flex items-start gap-2 text-sm text-frost-light">
+                              <svg className="w-5 h-5 text-neon-green flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                               </svg>
                               {detail}
@@ -173,24 +173,24 @@ export default function HowItWorksPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="section-padding bg-surface-secondary">
-          <div className="section-container">
+        <section className="section bg-surface-secondary">
+          <div className="container-custom">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-center max-w-2xl mx-auto"
             >
-              <h2 className="text-display-3 font-bold text-slate-900 mb-6">
+              <h2 className="text-display-3 font-bold text-white mb-6">
                 Ready to lower your bills?
               </h2>
-              <p className="text-body-lg text-slate-600 mb-8">
+              <p className="text-body-lg text-frost-light mb-8">
                 Join thousands of customers saving money every month. It takes less than 2 minutes to get started.
               </p>
-              <FloatingButton onClick={() => setIsModalOpen(true)} variant="primary" size="xl">
+              <FloatingButton onClick={() => setIsModalOpen(true)} variant="neon" size="xl">
                 Get Started — It&apos;s Free
               </FloatingButton>
-              <p className="mt-4 text-sm text-slate-500">
+              <p className="mt-4 text-sm text-frost-medium">
                 No savings, no fee. 100% risk-free.
               </p>
             </motion.div>
