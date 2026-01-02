@@ -7,7 +7,8 @@ export const metadata: Metadata = {
     template: '%s | Wefixbill',
   },
   description: 'Stop overpaying for your bills. Our expert negotiators reduce your internet, cable, wireless, and utility bills. Pay only when we save you money.',
-  keywords: ['bill negotiation', 'save money', 'lower bills', 'bill reduction', 'internet bills', 'cable bills', 'utility savings'],
+  keywords: ['bill negotiation', 'save money', 'lower bills', 'bill reduction', 'internet bills', 'cable bills', 'utility savings', 'bill monitoring'],
+  authors: [{ name: 'Wefixbill' }],
   icons: {
     icon: [
       { url: '/favicon.ico?v=2', sizes: '32x32' },
@@ -21,10 +22,19 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
   openGraph: {
     title: 'Wefixbill | Expert Bill Negotiation Services',
-    description: 'Stop overpaying for your bills. Our expert negotiators save you money.',
+    description: 'Stop overpaying for your bills. Our expert negotiators reduce your internet, cable, wireless, and utility bills.',
     type: 'website',
     locale: 'en_US',
     siteName: 'Wefixbill',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Wefixbill | Expert Bill Negotiation Services',
+    description: 'Stop overpaying for your bills. Our expert negotiators reduce your internet, cable, wireless, and utility bills.',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 }
 
@@ -32,7 +42,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#030712',
+  themeColor: '#0f172a',
 }
 
 export default function RootLayout({
@@ -41,31 +51,26 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    <html lang="en" className="scroll-smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link 
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" 
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" 
           rel="stylesheet" 
         />
       </head>
-      <body className="font-sans bg-midnight-950 text-white antialiased overflow-x-hidden">
-        {/* Aurora background effects */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          {/* Grid pattern */}
-          <div 
-            className="absolute inset-0 bg-grid-pattern bg-grid opacity-30"
-            style={{ backgroundSize: '50px 50px' }}
-          />
-          
-          {/* Aurora glow - top */}
-          <div className="absolute -top-40 -left-40 w-96 h-96 bg-neon-cyan/20 rounded-full blur-[120px] animate-aurora" />
-          <div className="absolute -top-20 right-1/4 w-80 h-80 bg-neon-purple/20 rounded-full blur-[100px] animate-aurora" style={{ animationDelay: '5s' }} />
-          
-          {/* Aurora glow - bottom */}
-          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-neon-pink/15 rounded-full blur-[120px] animate-aurora" style={{ animationDelay: '10s' }} />
-          <div className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-neon-purple/15 rounded-full blur-[100px] animate-aurora" style={{ animationDelay: '7s' }} />
+      <body className="font-sans overflow-x-hidden bg-slate-900 text-white antialiased">
+        {/* Grid pattern background - global */}
+        <div 
+          className="fixed inset-0 grid-pattern pointer-events-none z-0 opacity-60" 
+          aria-hidden="true" 
+        />
+        
+        {/* Aurora glow effects - global */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+          <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[150px] animate-aurora" />
+          <div className="absolute -bottom-40 -right-40 w-[800px] h-[800px] bg-violet-500/10 rounded-full blur-[150px] animate-aurora" style={{ animationDelay: '-4s' }} />
         </div>
         
         {/* Main content */}
