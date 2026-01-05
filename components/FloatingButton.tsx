@@ -1,7 +1,7 @@
 'use client'
 
 import { forwardRef, ReactNode } from 'react'
-import { motion, HTMLMotionProps } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'dark'
