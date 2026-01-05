@@ -30,7 +30,6 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden'
@@ -55,24 +54,22 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
       >
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative w-10 h-10">
                 <motion.div 
-                  className="absolute inset-0 bg-gradient-to-br from-stripe-purple to-stripe-blue rounded-xl"
+                  className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl"
                   whileHover={{ rotate: 6, scale: 1.05 }}
                   transition={{ duration: 0.2 }}
                 />
                 <div className="absolute inset-[2px] bg-white rounded-[10px] flex items-center justify-center">
-                  <span className="text-stripe-purple font-bold text-xl">W</span>
+                  <span className="text-indigo-600 font-bold text-xl">W</span>
                 </div>
               </div>
               <span className="font-bold text-xl text-slate-900">
-                wefix<span className="text-stripe-purple">bill</span>
+                wefix<span className="text-indigo-600">bill</span>
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-1">
               {navLinks.map((link) => (
                 <Link
@@ -81,12 +78,11 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
                   className="relative px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors rounded-lg hover:bg-slate-100/50 group"
                 >
                   {link.label}
-                  <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-stripe-purple scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                  <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                 </Link>
               ))}
             </div>
 
-            {/* Right side */}
             <div className="flex items-center gap-3">
               <Link 
                 href="/contact" 
@@ -104,12 +100,10 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
                 Start Saving
               </FloatingButton>
 
-              {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Toggle menu"
-                aria-expanded={mobileMenuOpen}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {mobileMenuOpen ? (
@@ -124,11 +118,9 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
         </nav>
       </motion.header>
 
-      {/* Mobile Menu - Premium drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -137,7 +129,6 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
               onClick={() => setMobileMenuOpen(false)}
             />
             
-            {/* Drawer */}
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -145,13 +136,11 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
               className="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-stripe-2xl z-50 md:hidden overflow-y-auto"
             >
-              {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-slate-100">
                 <span className="font-bold text-lg text-slate-900">Menu</span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-                  aria-label="Close menu"
+                  className="p-2 text-slate-400 hover:text-slate-600 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -159,7 +148,6 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
                 </button>
               </div>
 
-              {/* Nav links */}
               <nav className="px-4 py-6">
                 <div className="space-y-1">
                   {navLinks.map((link, index) => (
@@ -172,7 +160,7 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
                       <Link
                         href={link.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center justify-between py-3 px-4 text-base font-medium text-slate-700 hover:text-stripe-purple hover:bg-slate-50 rounded-xl transition-colors"
+                        className="flex items-center justify-between py-3 px-4 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition-colors"
                       >
                         {link.label}
                         <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,7 +177,7 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
                     <Link
                       href="/contact"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center justify-between py-3 px-4 text-base font-medium text-slate-700 hover:text-stripe-purple hover:bg-slate-50 rounded-xl transition-colors"
+                      className="flex items-center justify-between py-3 px-4 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition-colors"
                     >
                       Contact
                       <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,7 +187,6 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
                   </motion.div>
                 </div>
 
-                {/* CTA Button */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -219,7 +206,6 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
                   </FloatingButton>
                 </motion.div>
 
-                {/* Trust badge */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}

@@ -14,13 +14,10 @@ export default function FinalCTA({ onOpenModal }: FinalCTAProps) {
 
   return (
     <section ref={ref} className="relative py-24 md:py-32 overflow-hidden">
-      {/* Background */}
       <div className="absolute inset-0 bg-slate-900">
-        {/* Gradient orbs */}
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-stripe-purple/20 rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-stripe-cyan/15 rounded-full blur-[120px]" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-500/20 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-[120px]" />
         
-        {/* Grid pattern */}
         <div 
           className="absolute inset-0 opacity-10"
           style={{
@@ -40,7 +37,6 @@ export default function FinalCTA({ onOpenModal }: FinalCTAProps) {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto text-center"
         >
-          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={isInView ? { opacity: 1, scale: 1 } : {}}
@@ -55,19 +51,16 @@ export default function FinalCTA({ onOpenModal }: FinalCTAProps) {
             </span>
           </motion.div>
 
-          {/* Headline */}
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
             Ready to Stop Overpaying?
           </h2>
 
-          {/* Subhead */}
           <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
             Join thousands of happy customers who save an average of{' '}
-            <span className="text-stripe-cyan font-semibold">$127/month</span> on their bills. 
+            <span className="text-cyan-400 font-semibold">$127/month</span> on their bills. 
             No savings? No fee. It&apos;s that simple.
           </p>
 
-          {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -98,7 +91,6 @@ export default function FinalCTA({ onOpenModal }: FinalCTAProps) {
             </FloatingButton>
           </motion.div>
 
-          {/* Trust points */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}

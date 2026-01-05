@@ -4,7 +4,7 @@ import { forwardRef, ReactNode } from 'react'
 import { motion, useReducedMotion, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost'
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'dark'
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl'
 
 interface FloatingButtonProps {
@@ -24,36 +24,41 @@ interface FloatingButtonProps {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary: cn(
-    'text-white font-bold',
-    'bg-gradient-to-r from-cyan-500 to-blue-600',
-    'shadow-lg shadow-cyan-500/30',
-    'hover:shadow-xl hover:shadow-cyan-500/40',
-    'active:shadow-md'
+    'text-white font-semibold',
+    'bg-gradient-to-r from-indigo-500 to-indigo-600',
+    'shadow-button-primary',
+    'hover:shadow-button-primary-hover',
+    'active:shadow-stripe-md'
   ),
   secondary: cn(
-    'text-white font-semibold',
-    'bg-slate-800 border border-slate-600',
-    'hover:bg-slate-700 hover:border-cyan-500/50',
-    'shadow-lg shadow-slate-900/50'
+    'text-slate-700 font-semibold',
+    'bg-white border border-slate-200',
+    'shadow-stripe-sm',
+    'hover:bg-slate-50 hover:border-slate-300 hover:shadow-stripe-md',
   ),
   outline: cn(
-    'text-cyan-400 font-semibold',
-    'bg-transparent border-2 border-cyan-500/50',
-    'hover:bg-cyan-500/10 hover:border-cyan-400',
-    'shadow-none hover:shadow-lg hover:shadow-cyan-500/20'
+    'text-indigo-600 font-semibold',
+    'bg-transparent border-2 border-indigo-500/30',
+    'hover:bg-indigo-500/5 hover:border-indigo-500',
   ),
   ghost: cn(
-    'text-slate-300 font-medium',
+    'text-slate-600 font-medium',
     'bg-transparent',
-    'hover:bg-white/5 hover:text-white'
+    'hover:bg-slate-100 hover:text-slate-900'
+  ),
+  dark: cn(
+    'text-white font-semibold',
+    'bg-slate-900 border border-slate-700',
+    'shadow-stripe-lg',
+    'hover:bg-slate-800 hover:border-slate-600',
   ),
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'px-4 py-2 text-sm gap-1.5 rounded-lg',
-  md: 'px-6 py-3 text-base gap-2 rounded-xl',
-  lg: 'px-8 py-4 text-lg gap-2.5 rounded-xl',
-  xl: 'px-10 py-5 text-xl gap-3 rounded-2xl',
+  sm: 'px-4 py-2 text-sm gap-1.5 rounded-full',
+  md: 'px-6 py-3 text-base gap-2 rounded-full',
+  lg: 'px-8 py-4 text-lg gap-2.5 rounded-full',
+  xl: 'px-10 py-5 text-xl gap-3 rounded-full',
 }
 
 const FloatingButton = forwardRef<HTMLButtonElement, FloatingButtonProps>(
@@ -79,16 +84,15 @@ const FloatingButton = forwardRef<HTMLButtonElement, FloatingButtonProps>(
     const baseStyles = cn(
       'relative inline-flex items-center justify-center',
       'transition-all duration-300 ease-out',
-      'focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-900',
+      'focus:outline-none focus:ring-4 focus:ring-indigo-500/20',
       'disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
       fullWidth && 'w-full'
     )
 
-    // Animation variants
     const floatAnimation = prefersReducedMotion
       ? {}
       : {
-          y: [0, -3, 0],
+          y: [0, -4, 0],
           transition: {
             y: {
               duration: 3,
@@ -102,47 +106,38 @@ const FloatingButton = forwardRef<HTMLButtonElement, FloatingButtonProps>(
       ? { scale: 1.02 }
       : {
           scale: 1.03,
-          y: -3,
-          transition: { duration: 0.2, ease: 'easeOut' },
+          y: -4,
+          transition: { duration: 0.25, ease: [0.19, 1, 0.22, 1] },
         }
 
     const tapAnimation = { scale: 0.97, y: 0 }
 
-    const glowVariants = {
-      initial: { opacity: 0 },
-      hover: { 
-        opacity: 0.4,
-        transition: { duration: 0.3 }
-      }
-    }
-
     const content = (
       <>
-        {/* Glow effect layer */}
-        <motion.div
-          className={cn(
-            'absolute inset-0 rounded-inherit -z-10 blur-xl',
-            variant === 'primary' && 'bg-cyan-500',
-            variant === 'secondary' && 'bg-slate-500',
-            variant === 'outline' && 'bg-cyan-500',
-            'opacity-0'
-          )}
-          variants={glowVariants}
-          initial="initial"
-          whileHover="hover"
-        />
-
-        {/* Shimmer effect */}
-        {variant === 'primary' && !disabled && (
-          <div className="absolute inset-0 overflow-hidden rounded-inherit">
-            <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        {variant === 'primary' && !disabled && !loading && (
+          <div className="absolute inset-0 overflow-hidden rounded-full">
+            <motion.div 
+              className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
+              animate={{ x: ['-100%', '200%'] }}
+              transition={{ 
+                duration: 2.5, 
+                repeat: Infinity, 
+                repeatDelay: 3,
+                ease: 'easeInOut' 
+              }}
+            />
           </div>
         )}
 
-        {/* Content - Properly centered with flex */}
         {loading ? (
           <div className="flex items-center justify-center">
-            <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+            <motion.svg 
+              className="w-5 h-5" 
+              fill="none" 
+              viewBox="0 0 24 24"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            >
               <circle
                 className="opacity-25"
                 cx="12"
@@ -156,7 +151,7 @@ const FloatingButton = forwardRef<HTMLButtonElement, FloatingButtonProps>(
                 fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
-            </svg>
+            </motion.svg>
           </div>
         ) : (
           <span className="relative z-10 inline-flex items-center justify-center whitespace-nowrap">
@@ -177,7 +172,9 @@ const FloatingButton = forwardRef<HTMLButtonElement, FloatingButtonProps>(
       disabled: disabled || loading,
       onClick,
       type,
-      animate: !disabled && !loading ? floatAnimation : {},
+      animate: !disabled && !loading && typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches 
+        ? floatAnimation 
+        : {},
       whileHover: !disabled && !loading ? hoverAnimation : {},
       whileTap: !disabled && !loading ? tapAnimation : {},
     }

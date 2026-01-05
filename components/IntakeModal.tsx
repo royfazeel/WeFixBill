@@ -1,17 +1,29 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect, memo } from 'react'
+import { useState, useCallback, useRef, useEffect, memo, ChangeEvent } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import FloatingButton from './FloatingButton'
 import { cn, isValidEmail, isValidPhone, isValidZip } from '@/lib/utils'
-import { BILL_CATEGORIES, US_STATES, PROVIDERS_BY_CATEGORY } from '@/lib/pricing'
 
-interface IntakeModalProps {
-  isOpen: boolean
-  onClose: () => void
-}
+const BILL_CATEGORIES = [
+  { id: 'internet', name: 'Internet', icon: '🌐' },
+  { id: 'cable', name: 'Cable & TV', icon: '📺' },
+  { id: 'wireless', name: 'Wireless', icon: '📱' },
+  { id: 'utilities', name: 'Utilities', icon: '⚡' },
+  { id: 'subscriptions', name: 'Subscriptions', icon: '💳' },
+  { id: 'insurance', name: 'Insurance', icon: '🛡️' },
+]
 
-type Step = 1 | 2 | 3 | 4
+const US_STATES = [
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
+  'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
+  'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan',
+  'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
+  'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio',
+  'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+  'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia',
+  'Wisconsin', 'Wyoming'
+]
 
 interface FormData {
   fullName: string
@@ -22,210 +34,181 @@ interface FormData {
   billCategory: string
   provider: string
   monthlyAmount: string
-  signature: string
   consent: boolean
+  signature: string
 }
 
-interface FormErrors {
-  [key: string]: string
+interface IntakeModalProps {
+  isOpen: boolean
+  onClose: () => void
 }
-
-const initialFormData: FormData = {
-  fullName: '',
-  email: '',
-  phone: '',
-  state: '',
-  zipCode: '',
-  billCategory: '',
-  provider: '',
-  monthlyAmount: '',
-  signature: '',
-  consent: false,
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MOVED OUTSIDE: These were causing the keyboard to dismiss on every keystroke
-// because they were recreated on every render when defined inside the component
-// ═══════════════════════════════════════════════════════════════════════════════
 
 const getInputStyles = (hasError: boolean) => cn(
-  'w-full h-12 px-4 rounded-xl text-white text-sm',
-  'bg-slate-800/60 border transition-all duration-200',
-  'placeholder:text-slate-500 focus:outline-none',
-  hasError 
-    ? 'border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-    : 'border-slate-700 hover:border-slate-600 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20'
+  'w-full px-4 py-3.5 rounded-xl transition-all duration-200',
+  'bg-white text-slate-900 placeholder:text-slate-400',
+  'border shadow-stripe-sm',
+  'focus:outline-none focus:ring-4',
+  hasError
+    ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
+    : 'border-slate-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/10'
 )
 
 const getSelectStyles = (hasError: boolean) => cn(
-  getInputStyles(hasError),
-  'appearance-none cursor-pointer',
-  'bg-[url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/%3E%3C/svg%3E")]',
-  'bg-[length:20px] bg-[right_12px_center] bg-no-repeat pr-10'
+  'w-full px-4 py-3.5 rounded-xl transition-all duration-200 appearance-none cursor-pointer',
+  'bg-white text-slate-900',
+  'border shadow-stripe-sm',
+  'focus:outline-none focus:ring-4',
+  hasError
+    ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
+    : 'border-slate-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/10'
 )
 
-// Memoized FormField component - MUST be outside the main component
-const FormField = memo(function FormField({ 
-  label, 
-  error, 
-  children, 
-  className = '' 
-}: { 
+const FormField = memo(function FormField({
+  label,
+  name,
+  type = 'text',
+  value,
+  onChange,
+  error,
+  placeholder,
+  required = false,
+  inputMode,
+  autoComplete,
+  enterKeyHint,
+}: {
   label: string
+  name: string
+  type?: string
+  value: string
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void
   error?: string
-  children: React.ReactNode
-  className?: string 
+  placeholder?: string
+  required?: boolean
+  inputMode?: 'text' | 'email' | 'tel' | 'numeric' | 'decimal'
+  autoComplete?: string
+  enterKeyHint?: 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send'
 }) {
   return (
-    <div className={className}>
-      <label className="block text-sm font-medium text-slate-300 mb-2 text-left">
-        {label}
+    <div>
+      <label htmlFor={name} className="block text-sm font-medium text-slate-700 mb-2">
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
-      {children}
-      <AnimatePresence>
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="text-xs text-red-400 mt-1.5 text-left"
-          >
-            {error}
-          </motion.p>
-        )}
-      </AnimatePresence>
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        inputMode={inputMode}
+        autoComplete={autoComplete}
+        enterKeyHint={enterKeyHint}
+        className={getInputStyles(!!error)}
+      />
+      {error && (
+        <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          {error}
+        </p>
+      )}
     </div>
   )
 })
 
 export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
-  const [step, setStep] = useState<Step>(1)
-  const [direction, setDirection] = useState(0)
-  const [formData, setFormData] = useState<FormData>(initialFormData)
-  const [errors, setErrors] = useState<FormErrors>({})
+  const [step, setStep] = useState(1)
+  const [direction, setDirection] = useState(1)
+  const [formData, setFormData] = useState<FormData>({
+    fullName: '',
+    email: '',
+    phone: '',
+    state: '',
+    zipCode: '',
+    billCategory: '',
+    provider: '',
+    monthlyAmount: '',
+    consent: false,
+    signature: '',
+  })
   const [file, setFile] = useState<File | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState<{ message: string; referenceId: string } | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen])
+  const modalRef = useRef<HTMLDivElement>(null)
 
-  const resetForm = useCallback(() => {
-    setStep(1)
-    setDirection(0)
-    setFormData(initialFormData)
-    setErrors({})
-    setFile(null)
-    setIsSubmitting(false)
-    setSubmitError(null)
-    setSubmitSuccess(null)
-  }, [])
-
-  const handleClose = useCallback(() => {
-    onClose()
-    setTimeout(resetForm, 300)
-  }, [onClose, resetForm])
-
-  // Memoized field updater to prevent unnecessary re-renders
   const updateField = useCallback((field: keyof FormData, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    setErrors((prev) => {
-      if (prev[field]) {
-        const next = { ...prev }
-        delete next[field]
-        return next
-      }
-      return prev
+    setFormData(prev => ({ ...prev, [field]: value }))
+    setErrors(prev => {
+      const next = { ...prev }
+      delete next[field]
+      return next
     })
   }, [])
 
-  const validateStep1 = (): boolean => {
-    const newErrors: FormErrors = {}
-    if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
-      newErrors.fullName = 'Please enter your full name'
+  const validateStep = (currentStep: number): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    if (currentStep === 1) {
+      if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
+        newErrors.fullName = 'Please enter your full name'
+      }
+      if (!isValidEmail(formData.email)) {
+        newErrors.email = 'Please enter a valid email'
+      }
+      if (!isValidPhone(formData.phone)) {
+        newErrors.phone = 'Please enter a valid phone number'
+      }
+      if (!formData.state) {
+        newErrors.state = 'Please select your state'
+      }
+      if (!isValidZip(formData.zipCode)) {
+        newErrors.zipCode = 'Please enter a valid ZIP code'
+      }
+      if (!formData.billCategory) {
+        newErrors.billCategory = 'Please select a bill category'
+      }
+      if (!formData.provider.trim()) {
+        newErrors.provider = 'Please enter your provider'
+      }
+      const amount = parseFloat(formData.monthlyAmount)
+      if (isNaN(amount) || amount < 20 || amount > 5000) {
+        newErrors.monthlyAmount = 'Please enter an amount between $20 and $5000'
+      }
     }
-    if (!isValidEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email'
+
+    if (currentStep === 3) {
+      if (!formData.consent) {
+        newErrors.consent = 'Please agree to the terms to continue'
+      }
+      if (!formData.signature.trim() || formData.signature.toLowerCase().trim() !== formData.fullName.toLowerCase().trim()) {
+        newErrors.signature = 'Please sign with your full name as entered above'
+      }
     }
-    if (!isValidPhone(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone'
-    }
-    if (!formData.state) {
-      newErrors.state = 'Please select your state'
-    }
-    if (!isValidZip(formData.zipCode)) {
-      newErrors.zipCode = 'Please enter a valid ZIP'
-    }
-    if (!formData.billCategory) {
-      newErrors.billCategory = 'Please select a category'
-    }
-    if (!formData.provider.trim()) {
-      newErrors.provider = 'Please enter provider'
-    }
-    const amount = parseFloat(formData.monthlyAmount)
-    if (isNaN(amount) || amount < 20 || amount > 5000) {
-      newErrors.monthlyAmount = 'Enter $20 - $5000'
-    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const validateStep3 = (): boolean => {
-    const newErrors: FormErrors = {}
-    if (!formData.consent) {
-      newErrors.consent = 'Please agree to continue'
-    }
-    if (!formData.signature.trim()) {
-      newErrors.signature = 'Please sign with your name'
-    } else if (formData.signature.toLowerCase().trim() !== formData.fullName.toLowerCase().trim()) {
-      newErrors.signature = 'Must match your full name'
-    }
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleNext = useCallback(() => {
-    if (step === 1 && validateStep1()) {
-      setDirection(1)
-      setStep(2)
-    } else if (step === 2) {
-      setDirection(1)
-      setStep(3)
-    } else if (step === 3 && validateStep3()) {
-      handleSubmit()
-    }
-  }, [step, formData])
-
-  const handleBack = useCallback(() => {
-    if (step > 1) {
-      setDirection(-1)
-      setStep((prev) => (prev - 1) as Step)
-    }
-  }, [step])
-
-  const processFile = useCallback((selectedFile: File | undefined) => {
+  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
     if (!selectedFile) return
+
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
     if (!allowedTypes.includes(selectedFile.type)) {
-      setErrors((prev) => ({ ...prev, file: 'Only PDF, JPG, or PNG allowed' }))
+      setErrors(prev => ({ ...prev, file: 'Only PDF, JPG, or PNG allowed' }))
       return
     }
     if (selectedFile.size > 10 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, file: 'File must be under 10MB' }))
+      setErrors(prev => ({ ...prev, file: 'File must be under 10MB' }))
       return
     }
     setFile(selectedFile)
-    setErrors((prev) => { const next = { ...prev }; delete next.file; return next })
-  }, [])
+    setErrors(prev => { const next = { ...prev }; delete next.file; return next })
+  }
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
@@ -256,469 +239,389 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
     }
   }
 
-  const providers = formData.billCategory
-    ? PROVIDERS_BY_CATEGORY[formData.billCategory as keyof typeof PROVIDERS_BY_CATEGORY] || []
-    : []
+  const handleNext = () => {
+    if (step === 3) {
+      if (validateStep(3)) handleSubmit()
+      return
+    }
+    if (validateStep(step)) {
+      setDirection(1)
+      setStep(prev => prev + 1)
+    }
+  }
+
+  const handleBack = () => {
+    setDirection(-1)
+    setStep(prev => prev - 1)
+  }
+
+  const handleClose = () => {
+    onClose()
+    setTimeout(() => {
+      setStep(1)
+      setFormData({
+        fullName: '', email: '', phone: '', state: '', zipCode: '',
+        billCategory: '', provider: '', monthlyAmount: '', consent: false, signature: ''
+      })
+      setFile(null)
+      setErrors({})
+      setSubmitError(null)
+      setSubmitSuccess(null)
+    }, 300)
+  }
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) handleClose()
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isOpen])
+
+  const slideVariants = {
+    enter: (dir: number) => ({ x: dir > 0 ? 50 : -50, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -50 : 50, opacity: 0 }),
+  }
 
   if (!isOpen) return null
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-          onClick={handleClose}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={(e) => e.target === e.currentTarget && handleClose()}
         >
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-            className="relative w-full max-w-lg bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+            ref={modalRef}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="relative w-full max-w-lg bg-white rounded-3xl shadow-stripe-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
           >
-            {/* Glow effects */}
-            <div className="absolute -top-32 -right-32 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-violet-500/15 rounded-full blur-[100px] pointer-events-none" />
-
-            {/* Close button */}
-            <button
-              onClick={handleClose}
-              className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* Progress Steps */}
-            {step < 4 && (
-              <div className="relative z-10 px-6 pt-6 pb-4">
-                <div className="flex items-center justify-center">
-                  {[1, 2, 3].map((s, i) => (
-                    <div key={s} className="flex items-center">
-                      <motion.div
-                        animate={{
-                          backgroundColor: step >= s ? '#06b6d4' : '#334155',
-                          scale: step === s ? 1.1 : 1
-                        }}
-                        transition={{ duration: 0.3 }}
-                        className="w-9 h-9 rounded-full flex items-center justify-center"
-                      >
-                        {step > s ? (
-                          <motion.svg
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="w-4 h-4 text-slate-900"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </motion.svg>
-                        ) : (
-                          <span className={cn(
-                            'text-sm font-semibold',
-                            step >= s ? 'text-slate-900' : 'text-slate-400'
-                          )}>{s}</span>
-                        )}
-                      </motion.div>
-                      {i < 2 && (
-                        <motion.div
-                          animate={{ backgroundColor: step > s ? '#06b6d4' : '#334155' }}
-                          transition={{ duration: 0.3 }}
-                          className="w-16 h-1 mx-2 rounded-full"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between mt-3 px-1">
-                  <span className={cn('text-xs', step >= 1 ? 'text-cyan-400' : 'text-slate-500')}>Details</span>
-                  <span className={cn('text-xs', step >= 2 ? 'text-cyan-400' : 'text-slate-500')}>Upload</span>
-                  <span className={cn('text-xs', step >= 3 ? 'text-cyan-400' : 'text-slate-500')}>Confirm</span>
-                </div>
+            <div className="sticky top-0 z-10 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Get Your Free Quote</h2>
+                <p className="text-sm text-slate-500">Step {step} of 3</p>
               </div>
-            )}
+              <button
+                onClick={handleClose}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
 
-            {/* Content Area */}
-            <div className="relative z-10 max-h-[70vh] overflow-y-auto">
+            <div className="h-1 bg-slate-100">
+              <motion.div
+                className="h-full bg-gradient-to-r from-indigo-500 to-blue-500"
+                initial={{ width: '0%' }}
+                animate={{ width: `${(step / 3) * 100}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+
+            <div className="p-6">
+              {submitError && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                  {submitError}
+                </div>
+              )}
+
               <AnimatePresence mode="wait" custom={direction}>
-                {/* ═══════════════════════════════════════════════════════════
-                    STEP 1: USER INFO & BILL DETAILS
-                   ═══════════════════════════════════════════════════════════ */}
                 {step === 1 && (
                   <motion.div
                     key="step1"
-                    initial={{ opacity: 0, x: direction >= 0 ? 30 : -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: direction >= 0 ? -30 : 30 }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                    className="px-6 pb-6"
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.3 }}
+                    className="space-y-4"
                   >
-                    {/* Header */}
-                    <div className="text-center mb-6">
-                      <h2 className="text-xl font-bold text-white">Let&apos;s Get Started</h2>
-                      <p className="text-sm text-slate-400 mt-1">Tell us about yourself and your bill</p>
+                    <FormField
+                      label="Full Name"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={(e) => updateField('fullName', e.target.value)}
+                      error={errors.fullName}
+                      placeholder="John Smith"
+                      required
+                      autoComplete="name"
+                      enterKeyHint="next"
+                    />
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        label="Email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => updateField('email', e.target.value)}
+                        error={errors.email}
+                        placeholder="john@email.com"
+                        required
+                        inputMode="email"
+                        autoComplete="email"
+                        enterKeyHint="next"
+                      />
+                      <FormField
+                        label="Phone"
+                        name="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => updateField('phone', e.target.value)}
+                        error={errors.phone}
+                        placeholder="(555) 123-4567"
+                        required
+                        inputMode="tel"
+                        autoComplete="tel"
+                        enterKeyHint="next"
+                      />
                     </div>
 
-                    {/* Form Grid */}
-                    <div className="space-y-4">
-                      {/* Full Name */}
-                      <FormField label="Full Name" error={errors.fullName}>
-                        <input
-                          type="text"
-                          value={formData.fullName}
-                          onChange={(e) => updateField('fullName', e.target.value)}
-                          className={getInputStyles(!!errors.fullName)}
-                          placeholder="John Smith"
-                          autoComplete="name"
-                          enterKeyHint="next"
-                        />
-                      </FormField>
-
-                      {/* Email & Phone - 2 columns */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormField label="Email" error={errors.email}>
-                          <input
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => updateField('email', e.target.value)}
-                            className={getInputStyles(!!errors.email)}
-                            placeholder="john@email.com"
-                            autoComplete="email"
-                            enterKeyHint="next"
-                          />
-                        </FormField>
-                        <FormField label="Phone" error={errors.phone}>
-                          <input
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => updateField('phone', e.target.value)}
-                            className={getInputStyles(!!errors.phone)}
-                            placeholder="(555) 123-4567"
-                            autoComplete="tel"
-                            enterKeyHint="next"
-                          />
-                        </FormField>
-                      </div>
-
-                      {/* State & ZIP - 2 columns */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormField label="State" error={errors.state}>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="state" className="block text-sm font-medium text-slate-700 mb-2">
+                          State <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
                           <select
+                            id="state"
+                            name="state"
                             value={formData.state}
                             onChange={(e) => updateField('state', e.target.value)}
                             className={getSelectStyles(!!errors.state)}
                           >
-                            <option value="" className="bg-slate-800">Select</option>
-                            {US_STATES.map((s) => (
-                              <option key={s.code} value={s.code} className="bg-slate-800">{s.name}</option>
+                            <option value="">Select state</option>
+                            {US_STATES.map(state => (
+                              <option key={state} value={state}>{state}</option>
                             ))}
                           </select>
-                        </FormField>
-                        <FormField label="ZIP Code" error={errors.zipCode}>
-                          <input
-                            type="text"
-                            value={formData.zipCode}
-                            onChange={(e) => updateField('zipCode', e.target.value)}
-                            className={getInputStyles(!!errors.zipCode)}
-                            placeholder="12345"
-                            maxLength={10}
-                            autoComplete="postal-code"
-                            enterKeyHint="next"
-                          />
-                        </FormField>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="relative py-2">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-slate-800" />
-                        </div>
-                        <div className="relative flex justify-center">
-                          <span className="px-3 text-xs text-slate-500 bg-slate-900">Bill Info</span>
-                        </div>
-                      </div>
-
-                      {/* Bill Category */}
-                      <FormField label="Bill Category" error={errors.billCategory}>
-                        <select
-                          value={formData.billCategory}
-                          onChange={(e) => { updateField('billCategory', e.target.value); updateField('provider', '') }}
-                          className={getSelectStyles(!!errors.billCategory)}
-                        >
-                          <option value="" className="bg-slate-800">Select category</option>
-                          {BILL_CATEGORIES.map((cat) => (
-                            <option key={cat.id} value={cat.id} className="bg-slate-800">{cat.icon} {cat.name}</option>
-                          ))}
-                        </select>
-                      </FormField>
-
-                      {/* Provider & Amount - 2 columns */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormField label="Provider" error={errors.provider}>
-                          {providers.length > 0 ? (
-                            <select
-                              value={formData.provider}
-                              onChange={(e) => updateField('provider', e.target.value)}
-                              className={getSelectStyles(!!errors.provider)}
-                            >
-                              <option value="" className="bg-slate-800">Select</option>
-                              {providers.map((p) => (
-                                <option key={p} value={p} className="bg-slate-800">{p}</option>
-                              ))}
-                              <option value="Other" className="bg-slate-800">Other</option>
-                            </select>
-                          ) : (
-                            <input
-                              type="text"
-                              value={formData.provider}
-                              onChange={(e) => updateField('provider', e.target.value)}
-                              className={getInputStyles(!!errors.provider)}
-                              placeholder="Provider name"
-                              enterKeyHint="next"
-                            />
-                          )}
-                        </FormField>
-                        <FormField label="Monthly Amount" error={errors.monthlyAmount}>
-                          <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
-                            <input
-                              type="number"
-                              value={formData.monthlyAmount}
-                              onChange={(e) => updateField('monthlyAmount', e.target.value)}
-                              className={cn(getInputStyles(!!errors.monthlyAmount), 'pl-8')}
-                              placeholder="150"
-                              min="20"
-                              max="5000"
-                              inputMode="decimal"
-                              enterKeyHint="done"
-                            />
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </div>
-                        </FormField>
+                        </div>
+                        {errors.state && <p className="mt-1.5 text-sm text-red-600">{errors.state}</p>}
                       </div>
+
+                      <FormField
+                        label="ZIP Code"
+                        name="zipCode"
+                        value={formData.zipCode}
+                        onChange={(e) => updateField('zipCode', e.target.value)}
+                        error={errors.zipCode}
+                        placeholder="12345"
+                        required
+                        inputMode="numeric"
+                        autoComplete="postal-code"
+                        enterKeyHint="next"
+                      />
                     </div>
 
-                    {/* Continue Button */}
-                    <div className="mt-6">
-                      <FloatingButton onClick={handleNext} variant="primary" size="lg" fullWidth>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Bill Category <span className="text-red-500">*</span>
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {BILL_CATEGORIES.map(cat => (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => updateField('billCategory', cat.id)}
+                            className={cn(
+                              'p-3 rounded-xl border text-center transition-all',
+                              formData.billCategory === cat.id
+                                ? 'border-indigo-500 bg-indigo-500/5 ring-2 ring-indigo-500/20'
+                                : 'border-slate-200 hover:border-slate-300 bg-white'
+                            )}
+                          >
+                            <span className="text-xl mb-1 block">{cat.icon}</span>
+                            <span className="text-xs font-medium text-slate-700">{cat.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                      {errors.billCategory && <p className="mt-1.5 text-sm text-red-600">{errors.billCategory}</p>}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        label="Provider"
+                        name="provider"
+                        value={formData.provider}
+                        onChange={(e) => updateField('provider', e.target.value)}
+                        error={errors.provider}
+                        placeholder="e.g. Comcast"
+                        required
+                        enterKeyHint="next"
+                      />
+                      <FormField
+                        label="Monthly Amount"
+                        name="monthlyAmount"
+                        value={formData.monthlyAmount}
+                        onChange={(e) => updateField('monthlyAmount', e.target.value)}
+                        error={errors.monthlyAmount}
+                        placeholder="150"
+                        required
+                        inputMode="decimal"
+                        enterKeyHint="done"
+                      />
+                    </div>
+
+                    <div className="pt-4">
+                      <FloatingButton
+                        onClick={handleNext}
+                        variant="primary"
+                        size="lg"
+                        fullWidth
+                        icon={
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        }
+                        iconPosition="right"
+                      >
                         Continue
-                        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
                       </FloatingButton>
                     </div>
                   </motion.div>
                 )}
 
-                {/* ═══════════════════════════════════════════════════════════
-                    STEP 2: UPLOAD BILL
-                   ═══════════════════════════════════════════════════════════ */}
                 {step === 2 && (
                   <motion.div
                     key="step2"
-                    initial={{ opacity: 0, x: direction >= 0 ? 30 : -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: direction >= 0 ? -30 : 30 }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                    className="px-6 pb-6"
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.3 }}
                   >
-                    {/* Header */}
                     <div className="text-center mb-6">
-                      <h2 className="text-xl font-bold text-white">Upload Your Bill</h2>
-                      <p className="text-sm text-slate-400 mt-1">Optional - helps us negotiate better rates</p>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-2">Upload Your Bill</h3>
+                      <p className="text-sm text-slate-500">Optional but helps us get you better savings</p>
                     </div>
 
-                    {/* Upload Area */}
-                    <div
-                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-                      onDragLeave={() => setIsDragging(false)}
-                      onDrop={(e) => { e.preventDefault(); setIsDragging(false); processFile(e.dataTransfer.files?.[0]) }}
-                      onClick={() => fileInputRef.current?.click()}
+                    <label
+                      htmlFor="bill-upload"
                       className={cn(
-                        'relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200',
-                        isDragging ? 'border-cyan-500 bg-cyan-500/10' :
-                        file ? 'border-green-500 bg-green-500/5' :
-                        'border-slate-700 hover:border-slate-600 hover:bg-slate-800/30'
+                        'block border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all',
+                        file ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 hover:border-indigo-500 hover:bg-indigo-500/5'
                       )}
                     >
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        onChange={(e) => processFile(e.target.files?.[0])}
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="hidden"
-                      />
                       {file ? (
                         <div className="space-y-2">
-                          <div className="w-12 h-12 mx-auto bg-green-500/20 rounded-xl flex items-center justify-center">
-                            <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-12 h-12 mx-auto bg-emerald-100 rounded-full flex items-center justify-center">
+                            <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
-                          <p className="text-white font-medium text-sm truncate max-w-[200px] mx-auto">{file.name}</p>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setFile(null) }}
-                            className="text-red-400 hover:text-red-300 text-xs"
-                          >
-                            Remove
-                          </button>
+                          <p className="font-medium text-slate-900">{file.name}</p>
+                          <p className="text-sm text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                         </div>
                       ) : (
-                        <>
-                          <div className="w-12 h-12 mx-auto bg-slate-800 rounded-xl flex items-center justify-center mb-3">
+                        <div className="space-y-2">
+                          <div className="w-12 h-12 mx-auto bg-slate-100 rounded-full flex items-center justify-center">
                             <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                             </svg>
                           </div>
-                          <p className="text-white text-sm font-medium">Drop file here or click to browse</p>
-                          <p className="text-slate-500 text-xs mt-1">PDF, JPG, PNG up to 10MB</p>
-                        </>
+                          <p className="font-medium text-slate-700">Click to upload or drag & drop</p>
+                          <p className="text-sm text-slate-500">PDF, JPG, PNG up to 10MB</p>
+                        </div>
                       )}
-                    </div>
-                    {errors.file && <p className="text-xs text-red-400 mt-2 text-center">{errors.file}</p>}
+                      <input
+                        id="bill-upload"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    {errors.file && <p className="mt-2 text-sm text-red-600">{errors.file}</p>}
 
-                    {/* Info Box */}
-                    <div className="mt-4 p-3 bg-slate-800/40 rounded-lg">
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        <span className="text-cyan-400 font-medium">Why upload?</span> Helps us identify fees and negotiate better rates faster.
-                      </p>
-                    </div>
-
-                    {/* Buttons */}
                     <div className="mt-6 grid grid-cols-2 gap-3">
                       <FloatingButton onClick={handleBack} variant="secondary" size="lg">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
                         Back
                       </FloatingButton>
                       <FloatingButton onClick={handleNext} variant="primary" size="lg">
                         {file ? 'Continue' : 'Skip'}
-                        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
                       </FloatingButton>
                     </div>
                   </motion.div>
                 )}
 
-                {/* ═══════════════════════════════════════════════════════════
-                    STEP 3: REVIEW & AUTHORIZE
-                   ═══════════════════════════════════════════════════════════ */}
                 {step === 3 && (
                   <motion.div
                     key="step3"
-                    initial={{ opacity: 0, x: direction >= 0 ? 30 : -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: direction >= 0 ? -30 : 30 }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                    className="px-6 pb-6"
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.3 }}
                   >
-                    {/* Header */}
-                    <div className="text-center mb-6">
-                      <h2 className="text-xl font-bold text-white">Review & Confirm</h2>
-                      <p className="text-sm text-slate-400 mt-1">Please verify your information</p>
-                    </div>
-
-                    {/* Summary Card */}
-                    <div className="bg-slate-800/40 rounded-xl p-4 space-y-2.5 text-sm">
-                      {[
-                        { label: 'Name', value: formData.fullName },
-                        { label: 'Email', value: formData.email },
-                        { label: 'Phone', value: formData.phone },
-                        { label: 'Location', value: `${formData.state}, ${formData.zipCode}` },
-                        { label: 'Category', value: formData.billCategory },
-                        { label: 'Provider', value: formData.provider },
-                      ].map((item) => (
-                        <div key={item.label} className="flex justify-between items-center py-1.5 border-b border-slate-700/50 last:border-0">
-                          <span className="text-slate-400">{item.label}</span>
-                          <span className="text-white font-medium text-right">{item.value}</span>
-                        </div>
-                      ))}
-                      <div className="flex justify-between items-center pt-2 border-t border-slate-700">
-                        <span className="text-slate-400">Amount</span>
-                        <span className="text-cyan-400 font-bold text-lg">${formData.monthlyAmount}/mo</span>
+                    <div className="bg-slate-50 rounded-2xl p-4 mb-6 space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Category</span>
+                        <span className="font-medium text-slate-900">{formData.billCategory}</span>
                       </div>
-                      {file && (
-                        <div className="flex justify-between items-center pt-2">
-                          <span className="text-slate-400">Bill</span>
-                          <span className="text-green-400 text-xs flex items-center gap-1">
-                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            Uploaded
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Authorization */}
-                    <div className="mt-5 space-y-4">
-                      {/* Consent Checkbox */}
-                      <label className="flex items-start gap-3 cursor-pointer group">
-                        <div className="relative mt-0.5">
-                          <input
-                            type="checkbox"
-                            checked={formData.consent}
-                            onChange={(e) => updateField('consent', e.target.checked)}
-                            className="sr-only"
-                          />
-                          <div className={cn(
-                            'w-5 h-5 rounded border-2 transition-all flex items-center justify-center',
-                            formData.consent ? 'bg-cyan-500 border-cyan-500' : 'border-slate-600 group-hover:border-slate-500'
-                          )}>
-                            {formData.consent && (
-                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                        </div>
-                        <span className="text-xs text-slate-300 leading-relaxed text-left">
-                          I authorize Wefixbill to negotiate on my behalf and agree to the{' '}
-                          <a href="/terms-of-service" className="text-cyan-400 hover:underline">Terms</a> and{' '}
-                          <a href="/privacy-policy" className="text-cyan-400 hover:underline">Privacy Policy</a>.
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Provider</span>
+                        <span className="font-medium text-slate-900">{formData.provider}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Amount</span>
+                        <span className="font-bold text-emerald-600">${formData.monthlyAmount}/mo</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Bill</span>
+                        <span className={file ? 'text-emerald-600' : 'text-amber-600'}>
+                          {file ? '✓ Uploaded' : 'Not uploaded'}
                         </span>
-                      </label>
-                      {errors.consent && <p className="text-xs text-red-400">{errors.consent}</p>}
-
-                      {/* Signature */}
-                      <FormField label="Electronic Signature (type your full name)" error={errors.signature}>
-                        <input
-                          type="text"
-                          value={formData.signature}
-                          onChange={(e) => updateField('signature', e.target.value)}
-                          className={cn(getInputStyles(!!errors.signature), 'font-mono')}
-                          placeholder={formData.fullName}
-                          autoComplete="off"
-                          enterKeyHint="done"
-                        />
-                      </FormField>
+                      </div>
                     </div>
 
-                    {/* Error */}
-                    {submitError && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-xs"
-                      >
-                        {submitError}
-                      </motion.div>
-                    )}
+                    <label className="flex items-start gap-3 mb-4 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.consent}
+                        onChange={(e) => updateField('consent', e.target.checked)}
+                        className="mt-1 w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20"
+                      />
+                      <span className="text-sm text-slate-600">
+                        I authorize Wefixbill to negotiate on my behalf and agree to the{' '}
+                        <a href="/terms" className="text-indigo-600 hover:underline">Terms</a> and{' '}
+                        <a href="/privacy" className="text-indigo-600 hover:underline">Privacy Policy</a>.
+                      </span>
+                    </label>
+                    {errors.consent && <p className="mb-4 text-sm text-red-600">{errors.consent}</p>}
 
-                    {/* Buttons */}
+                    <FormField
+                      label="Electronic Signature"
+                      name="signature"
+                      value={formData.signature}
+                      onChange={(e) => updateField('signature', e.target.value)}
+                      error={errors.signature}
+                      placeholder="Type your full name"
+                      required
+                      enterKeyHint="done"
+                    />
+
                     <div className="mt-6 grid grid-cols-2 gap-3">
                       <FloatingButton onClick={handleBack} variant="secondary" size="lg" disabled={isSubmitting}>
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
                         Back
                       </FloatingButton>
                       <FloatingButton onClick={handleNext} variant="primary" size="lg" loading={isSubmitting}>
@@ -728,81 +631,30 @@ export default function IntakeModal({ isOpen, onClose }: IntakeModalProps) {
                   </motion.div>
                 )}
 
-                {/* ═══════════════════════════════════════════════════════════
-                    STEP 4: SUCCESS
-                   ═══════════════════════════════════════════════════════════ */}
                 {step === 4 && submitSuccess && (
                   <motion.div
                     key="step4"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="px-6 py-10 text-center"
+                    className="text-center py-6"
                   >
-                    {/* Success Icon */}
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: 'spring', damping: 15, stiffness: 200, delay: 0.1 }}
-                      className="w-20 h-20 mx-auto bg-green-500/20 rounded-full flex items-center justify-center mb-6"
-                    >
-                      <motion.svg
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{ duration: 0.4, delay: 0.3 }}
-                        className="w-10 h-10 text-green-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        strokeWidth={3}
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </motion.svg>
-                    </motion.div>
+                    <div className="w-16 h-16 mx-auto bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+                      <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">Request Submitted!</h3>
+                    <p className="text-slate-600 mb-4">{submitSuccess.message}</p>
+                    
+                    <div className="inline-block bg-slate-100 px-4 py-2 rounded-lg mb-6">
+                      <span className="text-slate-500 text-xs">Reference</span>
+                      <p className="text-indigo-600 font-mono font-bold">{submitSuccess.referenceId}</p>
+                    </div>
 
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
-                    >
-                      <h2 className="text-xl font-bold text-white mb-2">Request Submitted!</h2>
-                      <p className="text-sm text-slate-400 mb-4">{submitSuccess.message}</p>
-                      
-                      <div className="inline-block bg-slate-800/50 px-4 py-2 rounded-lg mb-6">
-                        <span className="text-slate-400 text-xs">Reference</span>
-                        <p className="text-cyan-400 font-mono font-bold">{submitSuccess.referenceId}</p>
-                      </div>
-
-                      {/* Next Steps */}
-                      <div className="text-left bg-slate-800/30 rounded-xl p-4 mb-6">
-                        <h4 className="text-white font-semibold text-sm mb-3">What&apos;s Next?</h4>
-                        <div className="space-y-2.5">
-                          {[
-                            'We review your request within 24 hours',
-                            'We contact your provider to negotiate',
-                            'You approve changes before we finalize',
-                            'You only pay if we save you money!'
-                          ].map((text, i) => (
-                            <motion.div
-                              key={i}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.5 + i * 0.1 }}
-                              className="flex items-start gap-2"
-                            >
-                              <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <span className="text-cyan-400 text-xs font-bold">{i + 1}</span>
-                              </div>
-                              <p className="text-slate-300 text-xs">{text}</p>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <FloatingButton onClick={handleClose} variant="primary" size="lg" fullWidth>
-                        Done
-                      </FloatingButton>
-                    </motion.div>
+                    <FloatingButton onClick={handleClose} variant="primary" size="lg" fullWidth>
+                      Done
+                    </FloatingButton>
                   </motion.div>
                 )}
               </AnimatePresence>

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     template: '%s | Wefixbill',
   },
   description: 'Stop overpaying for your bills. Our expert negotiators reduce your internet, cable, wireless, and utility bills. Pay only when we save you money.',
-  keywords: ['bill negotiation', 'save money', 'lower bills', 'bill reduction', 'internet bills', 'cable bills', 'utility savings', 'bill monitoring'],
+  keywords: ['bill negotiation', 'save money', 'lower bills', 'bill reduction', 'internet bills', 'cable bills', 'utility savings'],
   authors: [{ name: 'Wefixbill' }],
   icons: {
     icon: [
@@ -42,7 +42,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#0f172a',
+  themeColor: '#ffffff',
 }
 
 export default function RootLayout({
@@ -56,24 +56,21 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link 
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" 
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" 
           rel="stylesheet" 
         />
       </head>
-      <body className="font-sans overflow-x-hidden bg-slate-900 text-white antialiased">
-        {/* Grid pattern background - global */}
+      <body className="font-sans overflow-x-hidden bg-white text-slate-900 antialiased">
         <div 
-          className="fixed inset-0 grid-pattern pointer-events-none z-0 opacity-60" 
-          aria-hidden="true" 
-        />
-        
-        {/* Aurora glow effects - global */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[150px] animate-aurora" />
-          <div className="absolute -bottom-40 -right-40 w-[800px] h-[800px] bg-violet-500/10 rounded-full blur-[150px] animate-aurora" style={{ animationDelay: '-4s' }} />
+          className="fixed inset-0 pointer-events-none z-0" 
+          aria-hidden="true"
+        >
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-radial from-indigo-500/10 via-transparent to-transparent opacity-60" />
+          <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] animate-blob" />
+          <div className="absolute top-[40%] right-[10%] w-[400px] h-[400px] bg-cyan-500/5 rounded-full blur-[100px] animate-blob" style={{ animationDelay: '-5s' }} />
+          <div className="absolute bottom-[10%] left-[30%] w-[600px] h-[600px] bg-pink-500/5 rounded-full blur-[140px] animate-blob" style={{ animationDelay: '-10s' }} />
         </div>
         
-        {/* Main content */}
         <div className="relative z-10">
           {children}
         </div>

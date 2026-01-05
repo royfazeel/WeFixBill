@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     template: '%s | Wefixbill',
   },
   description: 'Stop overpaying for your bills. Our expert negotiators reduce your internet, cable, wireless, and utility bills. Pay only when we save you money.',
-  keywords: ['bill negotiation', 'save money', 'lower bills', 'bill reduction', 'internet bills', 'cable bills', 'utility savings', 'bill monitoring'],
+  keywords: ['bill negotiation', 'save money', 'lower bills', 'bill reduction', 'internet bills', 'cable bills', 'utility savings'],
   authors: [{ name: 'Wefixbill' }],
   icons: {
     icon: [
@@ -61,21 +61,16 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans overflow-x-hidden bg-white text-slate-900 antialiased">
-        {/* Ambient gradient mesh - subtle background effect */}
         <div 
           className="fixed inset-0 pointer-events-none z-0" 
           aria-hidden="true"
         >
-          {/* Hero glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-hero-glow opacity-60" />
-          
-          {/* Ambient blobs */}
-          <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-stripe-purple/5 rounded-full blur-[120px] animate-blob" />
-          <div className="absolute top-[40%] right-[10%] w-[400px] h-[400px] bg-stripe-cyan/5 rounded-full blur-[100px] animate-blob" style={{ animationDelay: '-5s' }} />
-          <div className="absolute bottom-[10%] left-[30%] w-[600px] h-[600px] bg-stripe-pink/5 rounded-full blur-[140px] animate-blob" style={{ animationDelay: '-10s' }} />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-radial from-indigo-500/10 via-transparent to-transparent opacity-60" />
+          <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] animate-blob" />
+          <div className="absolute top-[40%] right-[10%] w-[400px] h-[400px] bg-cyan-500/5 rounded-full blur-[100px] animate-blob" style={{ animationDelay: '-5s' }} />
+          <div className="absolute bottom-[10%] left-[30%] w-[600px] h-[600px] bg-pink-500/5 rounded-full blur-[140px] animate-blob" style={{ animationDelay: '-10s' }} />
         </div>
         
-        {/* Main content */}
         <div className="relative z-10">
           {children}
         </div>
